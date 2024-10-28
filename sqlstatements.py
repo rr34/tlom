@@ -27,10 +27,11 @@ def hours_report(date_range):
     dates_list = [date_range_dts[0] + datetime.timedelta(days=x) for x in range(date_delta)]
 
     hours, columns = DBfunctions.sql_execute("""
-SELECT Person , WorkDay , TIME_TO_SEC(TIMEDIFF(log_clock.EndTime, log_clock.StartTime))/(60*60)-log_clock.BreakHours as hourscalc
-from log_clock
+SELECT CONCAT(pp.Organization, ' - ', Person) as Person , WorkDay , TIME_TO_SEC(TIMEDIFF(lc.EndTime, lc.StartTime))/(60*60)-lc.BreakHours as hourscalc
+from log_clock lc
+JOIN people2_people pp on pp.Name = lc.Person
 WHERE WorkDay BETWEEN ? AND ?
-ORDER BY Person , WorkDay ;
+ORDER BY lc.Person , lc.WorkDay ;
 """, date_range_strings)
     
     hours_report = pd.DataFrame(hours, columns=columns)
