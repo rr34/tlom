@@ -28,10 +28,10 @@ def sql_execute(text, user_input, result_type):
 
     if user_input and result_type != 'updatemany':
         cur.execute(text, user_input)
-    elif result_type != 'updatemany':
-        cur.execute(text, )
-    elif result_type == 'updatemany':
-        cur.executemany(text, user_input)
+    elif result_type != 'updatemany' and not user_input:
+        cur.execute(text)
+    elif result_type == 'updatemany': # not used
+        cur.executemany()
         conn.commit()
         cur.close()
         conn.close()

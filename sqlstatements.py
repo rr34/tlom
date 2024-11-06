@@ -139,21 +139,35 @@ WHERE Status is NULL ;
 
 # take item with note and list of rooms in building and change the status to status
 def change_status(building, rooms_list, item, status, note):
-    siid_list, columns = DBfunctions.sql_execute("""
+    print(len(rooms_list))
+    esses = ','.join(['%s'] * len(rooms_list))
+    sql_statement = """
 SELECT siid from all_items_cte
-WHERE BuildingName = ?
-AND FrontDoor in ?
-AND Item = ? ;""", (building, rooms_list, item), 'table')
+WHERE BuildingName = %%s
+AND FrontDoor in (%s)
+AND Item = %%s ;""" % esses
+    qms = (building,) + rooms_list + (item,)
+    siid_list, columns = DBfunctions.sql_execute(sql_statement, qms, 'table')
+    print(len(siid_list))
 
-    DBfunctions.sql_execute("""
+    siid_list = tuple([i[0] for i in siid_list])
+    esses = ','.join(['%s'] * len(siid_list))
+    sql_statement = """
 UPDATE str3_items
-SET Status = ?
-WHERE siid in ? ;
-""", (status, siid_list), 'updatedb')
+SET Status = %%s
+WHERE siid in (%s) ; """ % esses
+    qms = (status,) + siid_list
+    DBfunctions.sql_execute(sql_statement, qms, 'updatedb')
+    
+    sql_statement = "INSERT INTO str4_notes (ItemID, Note, NoteType)\nVALUES "
 
-print('pause here')
-"""
-INSERT INTO str4_notes (ItemID, Note, NoteType)
-values (4215, 'Status changed to complete - Nate testing the function 2.', 'statuschange'),
-(4007, 'Status changed to complete - Nate testing the function 2.', 'statuschange') ;
-"""
+    for index, siid in enumerate(siid_list):
+        sql_statement += "\n(%s, 'Status change - %s - %s', 'statuschange')" % (siid, status, note)
+        if index < len(siid_list) - 1:
+            sql_statement += ","
+        else:
+            sql_statement += " ;"
+
+    DBfunctions.sql_execute(sql_statement, False, 'updatedb')
+
+    return True
