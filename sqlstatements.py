@@ -152,3 +152,8 @@ WHERE siid in ? ;
 """, (status, siid_list), 'updatedb')
 
 print('pause here')
+"""
+INSERT INTO str4_notes (ItemID, Note, NoteType)
+values (4215, 'Status changed to complete - Nate testing the function 2.', 'statuschange'),
+(4007, 'Status changed to complete - Nate testing the function 2.', 'statuschange') ;
+"""
