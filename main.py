@@ -6,10 +6,6 @@ from flask import Flask, render_template, request
 import time
 import sqlstatements
 
-# sqlstatements.test()
-
-# sqlstatements.hours_report(('2024-10-10', '2024-10-27'))
-
 def create_app():
 
     app = Flask(__name__)

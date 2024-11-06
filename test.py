@@ -1,25 +1,11 @@
-import mariadb
-import sys
+import sqlstatements
 
-try:
-    conn = mariadb.connect(
-        user="carruffsite",
-        host="127.0.0.1",
-        port=3306,
-        database="carruffdb"
-    )
-except mariadb.Error as e:
-    print(f"Error connecting to MariaDB platform: {e}")
-    sys.exit(1)
+# sqlstatements.consolidate(b='WallpaperRemove', a='Paint, Putty, Caulk, Stain, Wallpaper')
 
-# Get cursor
-cur = conn.cursor()
+# sqlstatements.generate_items()
 
-cur.execute(
-    """
-SELECT Organization, Name, Notes
-from people2_people;
-"""
-)
-for (Organization, Name, Notes) in cur:
-    print(f"Organization: {Organization}, Name: {Name}, Notes: {Notes}")
+# sqlstatements.test()
+
+# sqlstatements.hours_report('2024-11-04')
+
+sqlstatements.change_status('A', (101,102), 'accesscontrol', 'todo', 'Nate testing the function 3.')

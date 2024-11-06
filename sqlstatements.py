@@ -15,60 +15,46 @@ from people2_people;
     for (Organization, Name, Notes) in print_this:
         print(f"Organization: {Organization}, Name: {Name}, Notes: {Notes}")
 
-def hours_report(date_range):
-    # if second part is a number of days instead of a date
-    if len(date_range[1]) <= 3:
-        date_range_dts = (datetime.datetime.strptime(date_range[0], '%Y-%m-%d'), datetime.datetime.strptime(date_range[0], '%Y-%m-%d') + datetime.timedelta(days=date_range[1]))
-    else:
-        date_range_dts = (datetime.datetime.strptime(date_range[0], '%Y-%m-%d'), datetime.datetime.strptime(date_range[1], '%Y-%m-%d'))
-
-    date_range_strings = (datetime.datetime.strftime(date_range_dts[0], '%Y-%m-%d'), datetime.datetime.strftime(date_range_dts[1], '%Y-%m-%d'))
-
-    date_delta = (date_range_dts[1] - date_range_dts[0]).days
-    dates_list = [date_range_dts[0] + datetime.timedelta(days=x) for x in range(date_delta)]
-
+def hours_report(bill_date):
+    bill_date = (bill_date, )
     invoice, columns = DBfunctions.sql_execute("""
-SELECT CONCAT(pp.Organization, " - ", lm.Person) as Person, lm.WorkDay , TIME_TO_SEC(TIMEDIFF(lm.EndTime, lm.StartTime))/(60*60)-lm.BreakHours as Quantity, ChargeType as "Type/Unit" , Rate, (TIME_TO_SEC(TIMEDIFF(lm.EndTime, lm.StartTime))/(60*60)-lm.BreakHours)*Rate as Cost, Description 
+SELECT CONCAT(pp.Organization, " - ", lm.Person) as Person, lm.WorkDay , Quantity, ChargeType as "Type/Unit" , Rate, Quantity*Rate as Cost, Description 
 from log_money lm
 join people2_people pp on pp.Name = lm.Person 
-WHERE WorkDay BETWEEN ? AND ?
-and BilledCustomer = 1
+WHERE BilledCustomer = ?
 ORDER BY ChargeType, pp.Organization , Person , WorkDay ;
-""", date_range_strings, result_type='table')
+""", bill_date, result_type='table')
     invoice_report = pd.DataFrame(invoice, columns=columns)
 
     byperson, columns = DBfunctions.sql_execute("""
-SELECT CONCAT(pp.Organization, " - ", Person) as "Person", sum((TIME_TO_SEC(TIMEDIFF(lm.EndTime, lm.StartTime))/(60*60)-lm.BreakHours)*Rate) as Total
+SELECT CONCAT(pp.Organization, " - ", Person) as "Person", sum(Quantity*Rate) as Total
 from log_money lm
 join people2_people pp on pp.Name = lm.Person 
-WHERE WorkDay BETWEEN ? AND ?
-and BilledCustomer = 1
+WHERE BilledCustomer = ?
 GROUP BY Person 
 ORDER BY Organization, Person;
-""", date_range_strings, result_type='table')
+""", bill_date, result_type='table')
     byperson_report = pd.DataFrame(byperson, columns=columns)
 
     bytype, columns = DBfunctions.sql_execute("""
-SELECT ChargeType , sum((TIME_TO_SEC(TIMEDIFF(lm.EndTime, lm.StartTime))/(60*60)-lm.BreakHours)*Rate) as Cost
+SELECT ChargeType , sum(Quantity*Rate) as Cost
 from log_money lm
 join people2_people pp on pp.Name = lm.Person 
-WHERE WorkDay BETWEEN ? AND ?
-and BilledCustomer = 1
+WHERE BilledCustomer = ?
 GROUP BY ChargeType 
 ORDER BY ChargeType ;
-""", date_range_strings, result_type='table')
+""", bill_date, result_type='table')
     bytype_report = pd.DataFrame(bytype, columns=columns)
 
     byinvoice, columns = DBfunctions.sql_execute("""
-SELECT CONCAT(pp.Organization, " - ", Person) as "Person", sum((TIME_TO_SEC(TIMEDIFF(lm.EndTime, lm.StartTime))/(60*60)-lm.BreakHours)*Rate) as Total, Description as InvoiceFilenames
+SELECT CONCAT(pp.Organization, " - ", Person) as "Person", sum(Quantity*Rate) as Total, Description as InvoiceFilenames
 from log_money lm
 join people2_people pp on pp.Name = lm.Person 
-WHERE WorkDay BETWEEN ? AND ?
+WHERE BilledCustomer = ?
 and Description IS NOT NULL 
-and BilledCustomer = 1
 GROUP BY Description
 ORDER BY Organization, Person;
-""", date_range_strings, result_type='table')
+""", bill_date, result_type='table')
     byinvoice_report = pd.DataFrame(byinvoice, columns=columns)
 
     with pd.ExcelWriter('bi-weekly report.xlsx') as writer:
@@ -80,4 +66,89 @@ ORDER BY Organization, Person;
     return True
 
 
-def all_tasks()
+# consolidate notes for item b into notes for item a by adjusting the itemID
+def consolidate(b, a):
+    rows, columns = DBfunctions.sql_execute("""
+SELECT FrontDoorID, snid 
+from all_notes_cte 
+WHERE Item = ? ;
+""" , (b, ), 'table')
+    
+    qms_list = []
+    for row in rows:
+        qms_list.append((row[0], a, row[1]))
+
+    for qms in qms_list:
+        DBfunctions.sql_execute("""
+UPDATE str4_notes 
+SET ItemID = (
+SELECT ItemID
+from all_items_cte 
+where FrontDoorID = ?
+and Item = ?
+)
+WHERE snid = ? ;
+""", qms, 'updatedb')
+
+    DBfunctions.sql_execute("""
+DELETE FROM str3_items 
+WHERE Item = ? ;
+""", (b,), 'updatedb')
+    
+    return True
+
+
+# add note to the same item in a list of rooms
+def add_note(item_name, rooms_list):
+    pass
+
+
+# add each item identified by 'residence' to each room
+def generate_items():
+    front_doors_list, columns = DBfunctions.sql_execute("""
+SELECT sfid from all_frontdoors_cte afc 
+where afc.`Type` = 'residence' ;""", False, 'table')
+
+    for sfid in front_doors_list:
+        print(sfid)
+
+        DBfunctions.sql_execute("""
+INSERT INTO str3_items (Item)
+SELECT ItemName FROM list_items li 
+WHERE li.Applicability = 'residences' 
+and ItemName NOT IN
+(SELECT Item
+from all_items_cte 
+WHERE FrontDoorID = ?) ;
+""", sfid, 'updatedb')
+
+        DBfunctions.sql_execute("""
+UPDATE str3_items 
+SET FrontDoorID = ?
+WHERE FrontDoorID is NULL ;
+""", sfid, 'updatedb')
+
+        DBfunctions.sql_execute("""
+UPDATE str3_items 
+SET Status = 'unmarked'
+WHERE Status is NULL ;
+""", False, 'updatedb')
+
+    return True
+
+
+# take item with note and list of rooms in building and change the status to status
+def change_status(building, rooms_list, item, status, note):
+    siid_list, columns = DBfunctions.sql_execute("""
+SELECT siid from all_items_cte
+WHERE BuildingName = ?
+AND FrontDoor in ?
+AND Item = ? ;""", (building, rooms_list, item), 'table')
+
+    DBfunctions.sql_execute("""
+UPDATE str3_items
+SET Status = ?
+WHERE siid in ? ;
+""", (status, siid_list), 'updatedb')
+
+print('pause here')
