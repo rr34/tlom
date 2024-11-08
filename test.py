@@ -10,7 +10,7 @@ import sqlstatements
 
 building = 'A'
 rooms_list = () # if single room number, requires a comma after
-item = 'Kitchen - Stove Top' # not case-sensitive
-status = 'todo' # todo / complete / unmarked
-note = 'Needs replaced according to Drew list.'
+item = 'climate control' # not case-sensitive
+status = 'complete' # todo / complete / unmarked
+note = 'Has new register on it. Looks new. NMR'
 sqlstatements.change_status(building, rooms_list, item, status, note)

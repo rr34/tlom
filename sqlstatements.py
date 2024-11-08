@@ -162,7 +162,7 @@ WHERE siid in (%s) ; """ % esses
     sql_statement = "INSERT INTO str4_notes (ItemID, Note, NoteType)\nVALUES "
 
     for index, siid in enumerate(siid_list):
-        sql_statement += "\n(%s, 'Status change - %s - %s', 'statuschange')" % (siid, status, note)
+        sql_statement += "\n(%s, 'Status set - %s - %s', 'statusset')" % (siid, status, note)
         if index < len(siid_list) - 1:
             sql_statement += ","
         else:
