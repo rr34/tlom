@@ -107,32 +107,58 @@ def add_note(item_name, rooms_list):
 def generate_items():
     front_doors_list, columns = DBfunctions.sql_execute("""
 SELECT sfid from all_frontdoors_cte afc 
-where afc.`Type` = 'residence' ;""", False, 'table')
+where afc.TypeUnit = 'residence' ;""", False, 'table')
+    print(f'Number of units: {len(front_doors_list)}')
+
+    all_items_list, columns = DBfunctions.sql_execute("""
+SELECT ItemName FROM list_items li 
+WHERE li.Applicability in ('all','residences') ;""", False, 'table')
+    print(f'Items per unit: {len(all_items_list)}')
 
     for sfid in front_doors_list:
-        print(sfid)
+        print(f'sfid: {sfid}')
+        add_items_list, columns = DBfunctions.sql_execute("""
+SELECT ItemName FROM list_items li 
+WHERE li.Applicability in ('all','residences')
+and ItemName NOT IN
+(SELECT Item
+from all_items_cte 
+WHERE FrontDoorID = ?) ;
+""", sfid, 'table')
 
-        DBfunctions.sql_execute("""
+        print(f'Number of items to be added: {len(add_items_list)}')
+        if len(add_items_list) >= 1:
+
+            DBfunctions.sql_execute("""
 INSERT INTO str3_items (Item)
 SELECT ItemName FROM list_items li 
-WHERE li.Applicability = 'residences' 
+WHERE li.Applicability in ('all','residences')
 and ItemName NOT IN
 (SELECT Item
 from all_items_cte 
 WHERE FrontDoorID = ?) ;
 """, sfid, 'updatedb')
 
-        DBfunctions.sql_execute("""
+            DBfunctions.sql_execute("""
 UPDATE str3_items 
 SET FrontDoorID = ?
 WHERE FrontDoorID is NULL ;
 """, sfid, 'updatedb')
 
-        DBfunctions.sql_execute("""
+            DBfunctions.sql_execute("""
 UPDATE str3_items 
 SET Status = 'unmarked'
 WHERE Status is NULL ;
 """, False, 'updatedb')
+    
+
+    print(f'Items per unit: {len(all_items_list)}')
+    print(f'Number of units: {len(front_doors_list)}')
+    items_total, columns = DBfunctions.sql_execute("""
+SELECT siid from all_items_cte aic
+where TypeUnit = 'residence' ; """, False, 'table')
+    print(f'Total number of items should be: {len(all_items_list)*len(front_doors_list)}')
+    print(f'Total number of actual: {len(items_total)}')
 
     return True
 
@@ -162,7 +188,7 @@ WHERE siid in (%s) ; """ % esses
     sql_statement = "INSERT INTO str4_notes (ItemID, Note, NoteType)\nVALUES "
 
     for index, siid in enumerate(siid_list):
-        sql_statement += "\n(%s, 'Status set - %s - %s', 'statusset')" % (siid, status, note)
+        sql_statement += "\n(%s, '%s - Status set -%s-', 'statusset')" % (siid, status, note)
         if index < len(siid_list) - 1:
             sql_statement += ","
         else:
