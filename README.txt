@@ -1,7 +1,7 @@
-Connect with DBeaver again.
-Migrate SQL and everything to Windows.
-Establish primary keys / foreign keys in DB
-Establish flask site.
+check README on laptop. Seems different.
+incorporate todo list from DBeaver sql on home computer into code and show in online table or editable view / form
+establish a way to update status by room online - form?
+
 Display SQL results of room conditions.
 Display SQL results of hours.
 Display SQL results of rooms as an editable form by room.

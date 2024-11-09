@@ -2,7 +2,7 @@ import sqlstatements
 
 # sqlstatements.consolidate(b='WallpaperRemove', a='Paint, Putty, Caulk, Stain, Wallpaper')
 
-sqlstatements.generate_items()
+# sqlstatements.generate_items()
 
 # sqlstatements.test()
 
