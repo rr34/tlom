@@ -2,6 +2,7 @@ import sys
 import mariadb
 import mysql.connector
 from flask import jsonify
+import json
 
 # takes mysql text and a tuple of the user input values and returns the results in cursor format. 
 def sql_execute(text, user_input, result_type):
@@ -26,17 +27,10 @@ def sql_execute(text, user_input, result_type):
     # Get cursor
     cur = conn.cursor()
 
-    if user_input and result_type != 'updatemany':
+    if user_input and result_type:
         cur.execute(text, user_input)
-    elif result_type != 'updatemany' and not user_input:
+    elif not user_input:
         cur.execute(text)
-    elif result_type == 'updatemany': # not used
-        cur.executemany()
-        conn.commit()
-        cur.close()
-        conn.close()
-        return
-
 
     if result_type == 'table':
         result_fetched = cur.fetchall()
@@ -46,10 +40,13 @@ def sql_execute(text, user_input, result_type):
         return result_fetched, columns
     elif result_type == 'json':
         result_fetched = cur.fetchall()
-        result_json = jsonify(result_fetched)
+        columns = [c[0] for c in cur.description]
+        result_json = []
+        for result in result_fetched:
+            result_json.append(dict(zip(columns,result)))
         cur.close()
         conn.close()
-        return result_json
+        return jsonify(result_json)
     elif result_type == 'updatedb':
         conn.commit()
         cur.close()

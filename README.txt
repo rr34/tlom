@@ -1,4 +1,8 @@
 check README on laptop. Seems different.
+merge branch and start new branch
+log hours
+report hours
+report completed items
 incorporate todo list from DBeaver sql on home computer into code and show in online table or editable view / form
 establish a way to update status by room online - form?
 

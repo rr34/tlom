@@ -14,3 +14,6 @@ import sqlstatements
 # status = 'complete' # todo / complete / unmarked
 # note = 'Has new register on it. Looks new. NMR'
 # sqlstatements.change_status(building, rooms_list, item, status, note)
+
+print_this = sqlstatements.todo_list_room('A','428')
+print(print_this)
