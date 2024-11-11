@@ -211,3 +211,27 @@ ORDER by Status DESC, Item ;"""
     todo_json = DBfunctions.sql_execute(sql_statement, qms, 'json')
 
     return todo_json
+
+
+def post_to_db(post_values):
+    # need 1. list of siids for statuses that changed to unmarked, todo, complete. 
+    # by
+    # get a list of the siid statuses from db
+    # compare that list to the form data statuses
+    # (form data is the to <status>)
+    # add the appropriate note to each siid in the lists. Each of 3 tuples should be a tuple of (siid, note, NoteType) tuples
+    # I think also need 3 tuples of just the siids to make the status changes separately because setting other table in db.
+    # from the rest of the siids, which had a note. Those are general note, no status set. Also tuple of (siid, note, NoteType)
+
+    siids_list = []
+    for key,value in post_values.items():
+
+
+    siids_notes_list = []
+    for key,value in post_values.items():
+        if key.split(' ')[0] == 'siidnote' and value:
+            notes_list.append(key.split(' ')[1])
+        notes
+                
+
+    return True

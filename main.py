@@ -22,9 +22,8 @@ def create_app():
     @app.route("/byroom", methods=['GET', 'POST'])
     def byroom():
         if request.method == 'POST':
-            for item in request.form:
-                print(item)
-                print(request.form[item])
+            post_values = request.form
+            sqlstatements.post_to_db(post_values)
         try:
             building = request.args['building']
             room = request.args['frontdoor']

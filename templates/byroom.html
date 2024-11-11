@@ -26,7 +26,7 @@ Items by Room
     let items_div=document.getElementById('items_div')
     data_obj.forEach(function(obj) {
         let status_select=document.createElement('select');
-        status_select.name=obj.siid;
+        status_select.name='siid ' + obj.siid;
         let unmarked_opt=document.createElement('option');
         unmarked_opt.value='unmarked';
         unmarked_opt.innerHTML='unmarked';
@@ -52,7 +52,7 @@ Items by Room
         label_element.innerHTML=label_txt;
         let note_input=document.createElement('input');
         note_input.type='text';
-        note_input.name=obj.siid + ' note';
+        note_input.name= 'siidnote ' + obj.siid;
         status_select.appendChild(unmarked_opt);
         status_select.appendChild(todo_opt);
         status_select.appendChild(complete_opt);
