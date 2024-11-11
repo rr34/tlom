@@ -46,7 +46,7 @@ def sql_execute(text, user_input, result_type):
             result_json.append(dict(zip(columns,result)))
         cur.close()
         conn.close()
-        return jsonify(result_json)
+        return result_json
     elif result_type == 'updatedb':
         conn.commit()
         cur.close()

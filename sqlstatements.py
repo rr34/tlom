@@ -201,12 +201,12 @@ WHERE siid in (%s) ; """ % esses
 
 def todo_list_room(building, room):
     sql_statement = """
-SELECT CONCAT(BuildingName, " " , FrontDoor) as 'Room' , Item , TradeAssociated , Status , GROUP_CONCAT(CONCAT(Note, " - ", DATE_FORMAT(DATE_SUB(Moment,INTERVAL 5 hour), '%a, %d %b')) order by Moment DESC separator '\n') as 'Notes', siid
+SELECT CONCAT(BuildingName, " " , FrontDoor) as 'Room' , Item , TradeAssociated , Status , GROUP_CONCAT(CONCAT(Note, " - ", DATE_FORMAT(DATE_SUB(Moment,INTERVAL 5 hour), '%a, %d %b')) order by Moment DESC separator ' - ') as 'Notes', siid
 from all_notes_cte
 where BuildingName = ?
 and FrontDoor = ?
 GROUP by siid 
-ORDER by Item ;"""
+ORDER by Status DESC, Item ;"""
     qms = (building, room)
     todo_json = DBfunctions.sql_execute(sql_statement, qms, 'json')
 
