@@ -46,7 +46,7 @@ Items by Room
             complete_opt.selected=true;
         }
         let sep_txt = ' - ';
-        let label_txt = obj.Room + sep_txt + obj.Item + sep_txt + obj.TradeAssociated + sep_txt + '-->>' + obj.Notes + '<br>';
+        let label_txt = obj.Room + sep_txt + obj.Item + /*sep_txt + obj.TradeAssociated + sep_txt +*/ '---NOTES---' + obj.Notes + '<br>';
         let label_element=document.createElement('label');
         label_element.htmlFor=obj.siid;
         label_element.innerHTML=label_txt;

@@ -188,7 +188,7 @@ WHERE siid in (%s) ; """ % esses
     sql_statement = "INSERT INTO str4_notes (ItemID, Note, NoteType)\nVALUES "
 
     for index, siid in enumerate(siid_list):
-        sql_statement += "\n(%s, '%s - Status set -%s-', 'statusset')" % (siid, note, status)
+        sql_statement += "\n(%s, '%s - Status->%s', 'statusset')" % (siid, note, status)
         if index < len(siid_list) - 1:
             sql_statement += ","
         else:
@@ -201,7 +201,7 @@ WHERE siid in (%s) ; """ % esses
 
 def todo_list_room(building, room):
     sql_statement = """
-SELECT CONCAT(BuildingName, " " , FrontDoor) as 'Room' , Item , TradeAssociated , Status , GROUP_CONCAT(CONCAT(Note, " - ", DATE_FORMAT(DATE_SUB(Moment,INTERVAL 5 hour), '%a, %d %b')) order by Moment DESC separator '->') as 'Notes', siid
+SELECT CONCAT(BuildingName, " " , FrontDoor) as 'Room' , Item , TradeAssociated , Status , GROUP_CONCAT(CONCAT(Note, " - ", DATE_FORMAT(DATE_SUB(Moment,INTERVAL 5 hour), '%a, %d %b')) order by Moment DESC separator '---') as 'Notes', siid
 from all_notes_cte
 where BuildingName = ?
 and FrontDoor = ?
@@ -265,7 +265,7 @@ and Status != 'todo' ;""" % esses
         for siid in siids_settodo_list:
             siidstodo_notestuples_list.append((siid[0], post_values['siidnote '+str(siid[0])], 'todo'))
     else:
-        siids_settodo_list = False
+        siids_settodo_list = []
 
 
 # 3 complete find changed and prepare note
@@ -280,12 +280,18 @@ and Status != 'complete' ;""" % esses
         for siid in siids_setcomplete_list:
             siidscomplete_notestuples_list.append((siid[0], post_values['siidnote '+str(siid[0])], 'complete'))
     else:
-        siids_setcomplete_list = False
+        siids_setcomplete_list = []
 
-    siids_setunmarked_list = [siid[0] for siid in siids_setunmarked_list]
-    siids_settodo_list = [siid[0] for siid in siids_settodo_list]
-    siids_setcomplete_list = [siid[0] for siid in siids_setcomplete_list]
-    siids_addnotes_list = [siid for siid in siids_addnotes_list if siid not in (siids_setunmarked_list+siids_settodo_list+siids_setcomplete_list)]
+    if siids_setunmarked_list:
+        siids_setunmarked_list = [siid[0] for siid in siids_setunmarked_list]
+    if siids_settodo_list:
+        siids_settodo_list = [siid[0] for siid in siids_settodo_list]
+    if siids_setcomplete_list:
+        siids_setcomplete_list = [siid[0] for siid in siids_setcomplete_list]
+
+# 4 notes without status change
+    if siids_addnotes_list:
+        siids_addnotes_list = [siid for siid in siids_addnotes_list if siid not in (siids_setunmarked_list+siids_settodo_list+siids_setcomplete_list)]
 
 # 4 no status change prepare note
     if siids_addnotes_list:
@@ -308,7 +314,7 @@ WHERE siid in (%s) ; """ % esses
         sql_statement = "INSERT INTO str4_notes (ItemID, Note, NoteType)\nVALUES "
 
         for index, siid_note_status in enumerate(siidsunmarked_notestuples_list):
-            sql_statement += "\n(%s, '%s - Status set -%s-', 'statusset')" % siid_note_status
+            sql_statement += "\n(%s, '%s - Status->%s', 'statusset')" % siid_note_status
             if index < len(siidsunmarked_notestuples_list) - 1:
                 sql_statement += ","
             else:
@@ -330,7 +336,7 @@ WHERE siid in (%s) ; """ % esses
         sql_statement = "INSERT INTO str4_notes (ItemID, Note, NoteType)\nVALUES "
 
         for index, siid_note_status in enumerate(siidstodo_notestuples_list):
-            sql_statement += "\n(%s, '%s - Status set -%s-', 'statusset')" % siid_note_status
+            sql_statement += "\n(%s, '%s - Status->%s', 'statusset')" % siid_note_status
             if index < len(siidstodo_notestuples_list) - 1:
                 sql_statement += ","
             else:
@@ -352,7 +358,7 @@ WHERE siid in (%s) ; """ % esses
         sql_statement = "INSERT INTO str4_notes (ItemID, Note, NoteType)\nVALUES "
 
         for index, siid_note_status in enumerate(siidscomplete_notestuples_list):
-            sql_statement += "\n(%s, '%s - Status set -%s-', 'statusset')" % siid_note_status
+            sql_statement += "\n(%s, '%s - Status->%s', 'statusset')" % siid_note_status
             if index < len(siidscomplete_notestuples_list) - 1:
                 sql_statement += ","
             else:

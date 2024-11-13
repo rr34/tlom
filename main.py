@@ -27,7 +27,7 @@ def byroom():
         room = request.args['frontdoor']
     except:
         building = 'A'
-        room = '428'
+        room = '101'
     display_this_json = sqlstatements.todo_list_room(building=building, room=room)
     # display_this_json_str = display_this_jsonify.get_data(as_text=True)
     return render_template('byroom.html', display_this=display_this_json)
