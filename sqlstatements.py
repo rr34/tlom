@@ -201,12 +201,13 @@ WHERE siid in (%s) ; """ % esses
 
 def todo_list_room(building, room):
     sql_statement = """
-SELECT CONCAT(BuildingName, " " , FrontDoor) as 'Room' , Item , TradeAssociated , Status , GROUP_CONCAT(CONCAT(Note, " - ", DATE_FORMAT(DATE_SUB(Moment,INTERVAL 5 hour), '%a, %d %b')) order by Moment DESC separator ' - ') as 'Notes', siid
+SELECT CONCAT(BuildingName, " " , FrontDoor) as 'Room' , Item , TradeAssociated , Status , GROUP_CONCAT(CONCAT(Note, " - ", DATE_FORMAT(DATE_SUB(Moment,INTERVAL 5 hour), '%a, %d %b')) order by Moment DESC separator '->') as 'Notes', siid
 from all_notes_cte
 where BuildingName = ?
 and FrontDoor = ?
 GROUP by siid 
-ORDER by Status DESC, Item ;"""
+-- ORDER by FIELD(Status, 'todo','unmarked','complete'), Item ;
+ORDER by Item ;"""
     qms = (building, room)
     todo_json = DBfunctions.sql_execute(sql_statement, qms, 'json')
 
@@ -222,9 +223,12 @@ def post_to_db(post_values):
     siids_unmarked_list = []
     siids_todo_list = []
     siids_complete_list = []
+    siids_addnotes_list = []
     for key,value in post_values.items():
         if key.split(' ')[0] == 'siidnote':
             current_note = value
+            if value:
+                siids_addnotes_list.append(key.split(' ')[1])
         elif key.split(' ')[0] == 'siid' and value == 'unmarked':
             siids_unmarked_list.append(key.split(' ')[1])
         elif key.split(' ')[0] == 'siid' and value == 'todo':
@@ -236,41 +240,63 @@ def post_to_db(post_values):
     siids_complete_list = tuple(siids_complete_list)
 
 # 1 unmarked find changed and prepare note
-    esses = ','.join(['%s'] * len(siids_unmarked_list))
-    sql_statement = """
+    if siids_unmarked_list:
+        esses = ','.join(['%s'] * len(siids_unmarked_list))
+        sql_statement = """
 SELECT siid from str3_items
 WHERE siid in (%s)
 and Status != 'unmarked' ;""" % esses
-    siids_setunmarked_list, columns = DBfunctions.sql_execute(sql_statement, siids_unmarked_list, 'table')
-    siidsunmarked_notestuples_list = []
-    for siid in siids_setunmarked_list:
-        siidsunmarked_notestuples_list.append((siid[0], post_values['siidnote '+str(siid[0])], 'unmarked'))
+        siids_setunmarked_list, columns = DBfunctions.sql_execute(sql_statement, siids_unmarked_list, 'table')
+        siidsunmarked_notestuples_list = []
+        for siid in siids_setunmarked_list:
+            siidsunmarked_notestuples_list.append((siid[0], post_values['siidnote '+str(siid[0])], 'unmarked'))
+    else:
+        siids_setunmarked_list = False
 
 # 2 todo find changed and prepare note
-    esses = ','.join(['%s'] * len(siids_todo_list))
-    sql_statement = """
+    if siids_todo_list:
+        esses = ','.join(['%s'] * len(siids_todo_list))
+        sql_statement = """
 SELECT siid from str3_items
 WHERE siid in (%s)
 and Status != 'todo' ;""" % esses
-    siids_settodo_list, columns = DBfunctions.sql_execute(sql_statement, siids_todo_list, 'table')
-    siidstodo_notestuples_list = []
-    for siid in siids_settodo_list:
-        siidstodo_notestuples_list.append((siid[0], post_values['siidnote '+str(siid[0])], 'todo'))
+        siids_settodo_list, columns = DBfunctions.sql_execute(sql_statement, siids_todo_list, 'table')
+        siidstodo_notestuples_list = []
+        for siid in siids_settodo_list:
+            siidstodo_notestuples_list.append((siid[0], post_values['siidnote '+str(siid[0])], 'todo'))
+    else:
+        siids_settodo_list = False
+
 
 # 3 complete find changed and prepare note
-    esses = ','.join(['%s'] * len(siids_complete_list))
-    sql_statement = """
+    if siids_complete_list:
+        esses = ','.join(['%s'] * len(siids_complete_list))
+        sql_statement = """
 SELECT siid from str3_items
 WHERE siid in (%s)
 and Status != 'complete' ;""" % esses
-    siids_setcomplete_list, columns = DBfunctions.sql_execute(sql_statement, siids_complete_list, 'table')
-    siidscomplete_notestuples_list = []
-    for siid in siids_setcomplete_list:
-        siidscomplete_notestuples_list.append((siid[0], post_values['siidnote '+str(siid[0])], 'complete'))
+        siids_setcomplete_list, columns = DBfunctions.sql_execute(sql_statement, siids_complete_list, 'table')
+        siidscomplete_notestuples_list = []
+        for siid in siids_setcomplete_list:
+            siidscomplete_notestuples_list.append((siid[0], post_values['siidnote '+str(siid[0])], 'complete'))
+    else:
+        siids_setcomplete_list = False
+
+    siids_setunmarked_list = [siid[0] for siid in siids_setunmarked_list]
+    siids_settodo_list = [siid[0] for siid in siids_settodo_list]
+    siids_setcomplete_list = [siid[0] for siid in siids_setcomplete_list]
+    siids_addnotes_list = [siid for siid in siids_addnotes_list if siid not in (siids_setunmarked_list+siids_settodo_list+siids_setcomplete_list)]
+
+# 4 no status change prepare note
+    if siids_addnotes_list:
+        siidsaddnotes_notestuples_list = []
+        for siid in siids_addnotes_list:
+            siidsaddnotes_notestuples_list.append((siid, post_values['siidnote '+str(siid)]))
+
 
 # 1 unmarked update statuses
     if siids_setunmarked_list:
-        siids_setunmarked_list = tuple([siid[0] for siid in siids_setunmarked_list])
+        siids_setunmarked_list = tuple(siids_setunmarked_list)
         esses = ','.join(['%s'] * len(siids_setunmarked_list))
         sql_statement = """
 UPDATE str3_items
@@ -292,7 +318,7 @@ WHERE siid in (%s) ; """ % esses
 
 # 2 todo update statuses
     if siids_settodo_list:
-        siids_settodo_list = tuple([siid[0] for siid in siids_settodo_list])
+        siids_settodo_list = tuple(siids_settodo_list)
         esses = ','.join(['%s'] * len(siids_settodo_list))
         sql_statement = """
 UPDATE str3_items
@@ -314,7 +340,7 @@ WHERE siid in (%s) ; """ % esses
 
 # 3 complete update statuses
     if siids_setcomplete_list:
-        siids_setcomplete_list = tuple([siid[0] for siid in siids_setcomplete_list])
+        siids_setcomplete_list = tuple(siids_setcomplete_list)
         esses = ','.join(['%s'] * len(siids_setcomplete_list))
         sql_statement = """
 UPDATE str3_items
@@ -333,5 +359,19 @@ WHERE siid in (%s) ; """ % esses
                 sql_statement += " ;"
 
         DBfunctions.sql_execute(sql_statement, False, 'updatedb')
+
+# 4 no status change insert notes
+    if siids_addnotes_list:
+        sql_statement = "INSERT INTO str4_notes (ItemID, Note, NoteType)\nVALUES "
+
+        for index, siid_note in enumerate(siidsaddnotes_notestuples_list):
+            sql_statement += "\n(%s, '%s', 'miscnote')" % siid_note
+            if index < len(siidsaddnotes_notestuples_list) - 1:
+                sql_statement += ","
+            else:
+                sql_statement += " ;"
+
+        DBfunctions.sql_execute(sql_statement, False, 'updatedb')
+
 
     return True
