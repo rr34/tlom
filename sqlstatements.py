@@ -251,7 +251,7 @@ and Status != 'unmarked' ;""" % esses
         for siid in siids_setunmarked_list:
             siidsunmarked_notestuples_list.append((siid[0], post_values['siidnote '+str(siid[0])], 'unmarked'))
     else:
-        siids_setunmarked_list = False
+        siids_setunmarked_list = []
 
 # 2 todo find changed and prepare note
     if siids_todo_list:
@@ -283,11 +283,11 @@ and Status != 'complete' ;""" % esses
         siids_setcomplete_list = []
 
     if siids_setunmarked_list:
-        siids_setunmarked_list = [siid[0] for siid in siids_setunmarked_list]
+        siids_setunmarked_list = [str(siid[0]) for siid in siids_setunmarked_list]
     if siids_settodo_list:
-        siids_settodo_list = [siid[0] for siid in siids_settodo_list]
+        siids_settodo_list = [str(siid[0]) for siid in siids_settodo_list]
     if siids_setcomplete_list:
-        siids_setcomplete_list = [siid[0] for siid in siids_setcomplete_list]
+        siids_setcomplete_list = [str(siid[0]) for siid in siids_setcomplete_list]
 
 # 4 notes without status change
     if siids_addnotes_list:

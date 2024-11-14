@@ -1,3 +1,5 @@
+standardize data types to strings of numbers within post_to_db()
+move javascript form creation to a separate file
 check README on laptop. Seems different.
 merge branch and start new branch
 log hours
