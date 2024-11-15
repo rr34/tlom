@@ -3,7 +3,7 @@
     <head>
         <meta charset="utf-8" />
         <title>{% block title %}{% endblock %}</title>
-        <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='site.css')}}" />
+        <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='site.css') }}" />
     </head>
 
     <body>
@@ -19,7 +19,7 @@
             {% endblock %}
             <hr/>
             <footer>
-                <p><img src="{{ url_for('static', filename='logo.png')}}" width="100" height="100"></p>
+                <p><img src="{{ url_for('static', filename='logo.png') }}" width="100" height="100"></p>
             </footer>
         </div>
     </body>
