@@ -1,0 +1,28 @@
+{% extends "layout.html" %}
+{% block title %}
+Items by Room
+{% endblock %}
+{% block content %}
+
+<label for="room_selection" id="room_selection">Enter a building and room:</label>
+<form name="room_selection" action="{{ url_for('byroom') }}" method="GET">
+    <label for="building">Building:</label>
+    <input type="text" id="building" name="building">
+    <label for="frontdoor">Room:</label>
+    <input type="text" id="frontdoor" name="frontdoor">
+    <input type="submit" value="Submit">
+</form><br>
+<h1 id="heading"></h1>
+
+<script type="text/javascript" src="{{ url_for('static', filename='js/editable_form.js') }}"></script>
+<script type="text/javascript">
+    let post_data_json = '{{ display_this|tojson }}'.replace(/\n/g, "\\n");
+    let post_data_obj = JSON.parse(post_data_json);
+    const heading = document.getElementById("heading")
+    heading.innerHTML = "Items Status for Room " + post_data_obj[0].Room;
+    
+    let items_data_form = create_form(post_data_obj);
+    
+    document.body.appendChild(items_data_form);
+</script>
+{% endblock %}
