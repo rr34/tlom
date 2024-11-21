@@ -1,3 +1,7 @@
+feeatures add
+add change_status function to site
+add priority label to By Room page
+add metrics page 
 merge branch and start new branch
 log hours
 report hours
