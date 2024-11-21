@@ -214,6 +214,21 @@ ORDER by Item ;"""
     return todo_json
 
 
+def todo_list_current():
+    sql_statement = """
+SELECT CONCAT(BuildingName, " " , FrontDoor) as 'Room' , Item , TradeAssociated , Status , GROUP_CONCAT(CONCAT(Note, " - ", DATE_FORMAT(DATE_SUB(Moment,INTERVAL 5 hour), '%a, %d %b')) order by Moment DESC separator '---') as 'Notes', siid
+from all_notes_cte
+WHERE Occupancy LIKE '%vacant%'
+AND Priority LIKE 'p%'
+AND Status = 'todo'
+GROUP by siid 
+ORDER by Priority , BuildingName , FrontDoor , Item ;"""
+    qms = False
+    todo_json = DBfunctions.sql_execute(sql_statement, qms, 'json')
+
+    return todo_json
+
+
 def post_to_db(post_values):
     siids_unmarked_list = []
     siids_todo_list = []
