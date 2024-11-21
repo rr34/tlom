@@ -1,0 +1,22 @@
+{% extends "layout.html" %}
+{% block title %}
+Items by Room
+{% endblock %}
+{% block content %}
+
+<h1 id="heading"></h1>
+<div id="items_div"></div>
+
+<script type="text/javascript" src="{{ url_for('static', filename='js/editable_form.js') }}"></script>
+<script type="text/javascript">
+    let post_data_json = '{{ display_this|tojson }}'.replace(/\n/g, "\\n");
+    let post_data_obj = JSON.parse(post_data_json);
+    let heading = document.getElementById("heading");
+    heading.innerHTML = "Current To-Do List";
+    
+    let items_data_form = create_form(post_data_obj);
+
+    let items_div = document.getElementById("items_div");
+    items_div.appendChild(items_data_form);
+</script>
+{% endblock %}
