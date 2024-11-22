@@ -15,18 +15,19 @@ from people2_people;
     for (Organization, Name, Notes) in print_this:
         print(f"Organization: {Organization}, Name: {Name}, Notes: {Notes}")
 
-def hours_report(bill_date):
-    bill_date = (bill_date, )
-    invoice, columns = DBfunctions.sql_execute("""
+def hours_report(bill_dates, this_report):
+    for bill_date in bill_dates:
+        bill_date = (bill_date, )
+        invoice, columns = DBfunctions.sql_execute("""
 SELECT CONCAT(pp.Organization, " - ", lm.Person) as Person, lm.WorkDay , Quantity, ChargeType as "Type/Unit" , Rate, Quantity*Rate as Cost, Description 
 from log_money lm
 join people2_people pp on pp.Name = lm.Person 
 WHERE BilledCustomer = ?
 ORDER BY ChargeType, pp.Organization , Person , WorkDay ;
 """, bill_date, result_type='table')
-    invoice_report = pd.DataFrame(invoice, columns=columns)
+        invoice_report = pd.DataFrame(invoice, columns=columns)
 
-    byperson, columns = DBfunctions.sql_execute("""
+        byperson, columns = DBfunctions.sql_execute("""
 SELECT CONCAT(pp.Organization, " - ", Person) as "Person", sum(Quantity*Rate) as Total
 from log_money lm
 join people2_people pp on pp.Name = lm.Person 
@@ -34,9 +35,9 @@ WHERE BilledCustomer = ?
 GROUP BY Person 
 ORDER BY Organization, Person;
 """, bill_date, result_type='table')
-    byperson_report = pd.DataFrame(byperson, columns=columns)
+        byperson_report = pd.DataFrame(byperson, columns=columns)
 
-    bytype, columns = DBfunctions.sql_execute("""
+        bytype, columns = DBfunctions.sql_execute("""
 SELECT ChargeType , sum(Quantity*Rate) as Cost
 from log_money lm
 join people2_people pp on pp.Name = lm.Person 
@@ -44,9 +45,9 @@ WHERE BilledCustomer = ?
 GROUP BY ChargeType 
 ORDER BY ChargeType ;
 """, bill_date, result_type='table')
-    bytype_report = pd.DataFrame(bytype, columns=columns)
+        bytype_report = pd.DataFrame(bytype, columns=columns)
 
-    byinvoice, columns = DBfunctions.sql_execute("""
+        byinvoice, columns = DBfunctions.sql_execute("""
 SELECT CONCAT(pp.Organization, " - ", Person) as "Person", sum(Quantity*Rate) as Total, Description as InvoiceFilenames
 from log_money lm
 join people2_people pp on pp.Name = lm.Person 
@@ -55,13 +56,17 @@ and Description IS NOT NULL
 GROUP BY Description
 ORDER BY Organization, Person;
 """, bill_date, result_type='table')
-    byinvoice_report = pd.DataFrame(byinvoice, columns=columns)
-
-    with pd.ExcelWriter('bi-weekly report.xlsx') as writer:
-        invoice_report.to_excel(writer, sheet_name='cr_invoice', index=False)
-        byperson_report.to_excel(writer, sheet_name='by_person', index=False)
-        # bytype_report.to_excel(writer, sheet_name='by_type', index=False)
-        byinvoice_report.to_excel(writer, sheet_name='by_invoicefile', index=False)
+        byinvoice_report = pd.DataFrame(byinvoice, columns=columns)
+    
+        if bill_date[0] != this_report:
+            print(bill_date[0] + ' Total: ' + str(invoice_report['Cost'].sum().value()*1.15))
+        elif bill_date[0] == this_report:
+            print(bill_date[0] + ' Total: ' + str(invoice_report['Cost'].sum().value()*1.15))
+            with pd.ExcelWriter('bi-weekly report.xlsx') as writer:
+                invoice_report.to_excel(writer, sheet_name='cr_invoice', index=False)
+                byperson_report.to_excel(writer, sheet_name='by_person', index=False)
+                # bytype_report.to_excel(writer, sheet_name='by_type', index=False)
+                byinvoice_report.to_excel(writer, sheet_name='by_invoicefile', index=False)
   
     return True
 
