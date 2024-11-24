@@ -59,14 +59,93 @@ ORDER BY Organization, Person;
         byinvoice_report = pd.DataFrame(byinvoice, columns=columns)
     
         if bill_date[0] != this_report:
-            print(bill_date[0] + ' Total: ' + str(invoice_report['Cost'].sum().value()*1.15))
+            print(bill_date[0] + ' Total: ' + str(invoice_report['Cost'].sum()))
         elif bill_date[0] == this_report:
-            print(bill_date[0] + ' Total: ' + str(invoice_report['Cost'].sum().value()*1.15))
+            print(bill_date[0] + ' Total: ' + str(invoice_report['Cost'].sum()))
             with pd.ExcelWriter('bi-weekly report.xlsx') as writer:
                 invoice_report.to_excel(writer, sheet_name='cr_invoice', index=False)
                 byperson_report.to_excel(writer, sheet_name='by_person', index=False)
                 # bytype_report.to_excel(writer, sheet_name='by_type', index=False)
                 byinvoice_report.to_excel(writer, sheet_name='by_invoicefile', index=False)
+  
+    return True
+
+
+def misc_reports(start_date, end_date):
+    invoice, columns = DBfunctions.sql_execute("""
+SELECT BuildingName , Occupancy , COUNT(Occupancy) as 'Count'
+FROM all_frontdoors_cte afc 
+WHERE TypeUnit = 'residence'
+group by BuildingName , Occupancy 
+ORDER by Occupancy , BuildingName ;
+""", False, result_type='table')
+    occupancy_report = pd.DataFrame(invoice, columns=columns)
+
+    invoice, columns = DBfunctions.sql_execute("""
+SELECT Item , Status , COUNT(Status) as 'Count' 
+from all_notes_cte
+WHERE Occupancy = 'vacant'
+and TypeUnit = 'residence'
+GROUP by ItemName , Status 
+ORDER BY Item , FIELD(Status, 'unmarked,','todo','complete') ;
+""", False, result_type='table')
+    by_item = pd.DataFrame(invoice, columns=columns)
+
+    invoice, columns = DBfunctions.sql_execute("""
+with filter_this as (SELECT BuildingName , FrontDoor , Moment , Note , Item , siid
+from all_notes_cte
+WHERE siid IN (SELECT siid from str4_notes sn
+WHERE Note LIKE '%Status->todo%'
+))
+SELECT Item, Note, CONCAT(BuildingName, " " , FrontDoor) as 'Room'
+from filter_this
+WHERE Note LIKE '%Status->complete%'
+and Moment > ?
+and Moment < ?
+GROUP by siid 
+Order by Item, Note;
+""", (start_date, end_date), result_type='table')
+    todo_to_complete = pd.DataFrame(invoice, columns=columns)
+
+    invoice, columns = DBfunctions.sql_execute("""
+SELECT CONCAT(BuildingName, " " , FrontDoor) as 'Room' , Item , Note , DATE_FORMAT(DATE_SUB(Moment, INTERVAL 5 hour), '%a, %d %b') as 'Date'
+from all_notes_cte
+-- WHERE Occupancy = 'vacant'
+WHERE Note LIKE '%Status->complete%'
+AND Moment >= ?
+AND Moment <= ?
+ORDER BY Item , Note , Moment ;
+""", (start_date, end_date), result_type='table')
+    marked_complete = pd.DataFrame(invoice, columns=columns)
+
+    invoice, columns = DBfunctions.sql_execute("""
+SELECT CONCAT(BuildingName, " " , FrontDoor) as 'Room' , Item , Note , DATE_FORMAT(DATE_SUB(Moment, INTERVAL 5 hour), '%a, %d %b') as 'Date'
+from all_notes_cte
+-- WHERE Occupancy = 'vacant'
+WHERE Note LIKE '%Status->todo%'
+AND Moment >= ?
+AND Moment <= ?
+ORDER BY Item , Note , Moment ;
+""", (start_date, end_date), result_type='table')
+    marked_todo = pd.DataFrame(invoice, columns=columns)
+
+    invoice, columns = DBfunctions.sql_execute("""
+SELECT CONCAT(BuildingName, " " , FrontDoor) as 'Room' , COUNT(Status) as 'Remaining Items' , Priority
+from all_items_cte aic 
+WHERE Occupancy = 'vacant'
+and Status != 'complete'
+GROUP by BuildingName , FrontDoor
+ORDER BY COUNT(Status) ;
+""", (start_date, end_date), result_type='table')
+    incomplete_byroom = pd.DataFrame(invoice, columns=columns)
+
+    with pd.ExcelWriter('misc reports.xlsx') as writer:
+        occupancy_report.to_excel(writer, sheet_name='occupancy', index=False)
+        by_item.to_excel(writer, sheet_name='by_item', index=False)
+        todo_to_complete.to_excel(writer, sheet_name='todo_to_complete', index=False)
+        marked_complete.to_excel(writer, sheet_name='marked_complete', index=False)
+        marked_todo.to_excel(writer, sheet_name='marked_todo', index=False)
+        incomplete_byroom.to_excel(writer, sheet_name='incomplete_byroom', index=False)
   
     return True
 

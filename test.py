@@ -6,7 +6,9 @@ import sqlstatements
 
 # sqlstatements.test()
 
-sqlstatements.hours_report(['2024-10-28', '2024-11-11', '2024-11-25'], '2024-10-28')
+# sqlstatements.hours_report(['2024-10-28', '2024-11-11', '2024-11-25'], '2024-11-25')
+
+sqlstatements.misc_reports('2024-11-11', '2024-11-24')
 
 # building = 'c'
 # rooms_list = () # if single room number, requires a comma after
