@@ -73,13 +73,23 @@ ORDER BY Organization, Person;
 
 def misc_reports(start_date, end_date):
     invoice, columns = DBfunctions.sql_execute("""
-SELECT BuildingName , Occupancy , COUNT(Occupancy) as 'Count'
+SELECT BuildingName as 'Building', Occupancy , COUNT(Occupancy) as 'Count'
 FROM all_frontdoors_cte afc 
 WHERE TypeUnit = 'residence'
 group by BuildingName , Occupancy 
-ORDER by Occupancy , BuildingName ;
+ORDER by BuildingName , Occupancy ;
 """, False, result_type='table')
     occupancy_report = pd.DataFrame(invoice, columns=columns)
+
+    invoice, columns = DBfunctions.sql_execute("""
+SELECT BuildingName as 'Building' , Status , COUNT(Status) as 'Count' 
+from all_notes_cte
+WHERE Occupancy = 'vacant'
+and TypeUnit = 'residence'
+GROUP by BuildingName , Status
+ORDER BY BuildingName , FIELD(Status, 'unmarked,','todo','complete') ;
+""", False, result_type='table')
+    bybuilding_counts = pd.DataFrame(invoice, columns=columns)
 
     invoice, columns = DBfunctions.sql_execute("""
 SELECT Item , Status , COUNT(Status) as 'Count' 
@@ -89,45 +99,17 @@ and TypeUnit = 'residence'
 GROUP by ItemName , Status 
 ORDER BY Item , FIELD(Status, 'unmarked,','todo','complete') ;
 """, False, result_type='table')
-    by_item = pd.DataFrame(invoice, columns=columns)
+    byitem_counts = pd.DataFrame(invoice, columns=columns)
 
     invoice, columns = DBfunctions.sql_execute("""
-with filter_this as (SELECT BuildingName , FrontDoor , Moment , Note , Item , siid
+SELECT CONCAT(BuildingName, ' ', FrontDoor) as 'Unit', Item , Status 
 from all_notes_cte
-WHERE siid IN (SELECT siid from str4_notes sn
-WHERE Note LIKE '%Status->todo%'
-))
-SELECT Item, Note, CONCAT(BuildingName, " " , FrontDoor) as 'Room'
-from filter_this
-WHERE Note LIKE '%Status->complete%'
-and Moment > ?
-and Moment < ?
-GROUP by siid 
-Order by Item, Note;
-""", (start_date, end_date), result_type='table')
-    todo_to_complete = pd.DataFrame(invoice, columns=columns)
-
-    invoice, columns = DBfunctions.sql_execute("""
-SELECT CONCAT(BuildingName, " " , FrontDoor) as 'Room' , Item , Note , DATE_FORMAT(DATE_SUB(Moment, INTERVAL 5 hour), '%a, %d %b') as 'Date'
-from all_notes_cte
--- WHERE Occupancy = 'vacant'
-WHERE Note LIKE '%Status->complete%'
-AND Moment >= ?
-AND Moment <= ?
-ORDER BY Item , Note , Moment ;
-""", (start_date, end_date), result_type='table')
-    marked_complete = pd.DataFrame(invoice, columns=columns)
-
-    invoice, columns = DBfunctions.sql_execute("""
-SELECT CONCAT(BuildingName, " " , FrontDoor) as 'Room' , Item , Note , DATE_FORMAT(DATE_SUB(Moment, INTERVAL 5 hour), '%a, %d %b') as 'Date'
-from all_notes_cte
--- WHERE Occupancy = 'vacant'
-WHERE Note LIKE '%Status->todo%'
-AND Moment >= ?
-AND Moment <= ?
-ORDER BY Item , Note , Moment ;
-""", (start_date, end_date), result_type='table')
-    marked_todo = pd.DataFrame(invoice, columns=columns)
+WHERE Occupancy = 'vacant'
+and TypeUnit = 'residence'
+GROUP by BuildingName , FrontDoor , ItemName 
+ORDER BY BuildingName , FrontDoor , ItemName ;
+""", False, result_type='table')
+    byroom_detail = pd.DataFrame(invoice, columns=columns)
 
     invoice, columns = DBfunctions.sql_execute("""
 SELECT CONCAT(BuildingName, " " , FrontDoor) as 'Room' , COUNT(Status) as 'Remaining Items' , Priority
@@ -139,13 +121,63 @@ ORDER BY COUNT(Status) ;
 """, (start_date, end_date), result_type='table')
     incomplete_byroom = pd.DataFrame(invoice, columns=columns)
 
+    invoice, columns = DBfunctions.sql_execute("""
+SELECT CONCAT(BuildingName , ' ' ,  FrontDoor) as 'Unit' , Priority , Item , GROUP_CONCAT(CONCAT(Note, " - ", DATE_FORMAT(DATE_SUB(Moment,INTERVAL 5 hour), '%a, %d %b')) order by Moment DESC separator '---') as 'Notes'
+from all_notes_cte
+WHERE Status = 'todo'
+and TypeUnit = 'residence'
+GROUP by siid 
+Order by Priority , BuildingName , FrontDoor , Item ;
+""", (start_date, end_date), result_type='table')
+    todo_bypriority = pd.DataFrame(invoice, columns=columns)
+
+    invoice, columns = DBfunctions.sql_execute("""
+SELECT TradeAssociated , CONCAT(BuildingName , ' ' ,  FrontDoor) as 'Unit' , Item , GROUP_CONCAT(CONCAT(Note, " - ", DATE_FORMAT(DATE_SUB(Moment,INTERVAL 5 hour), '%a, %d %b')) order by Moment DESC separator '---') as 'Notes'
+from all_notes_cte
+WHERE Status = 'complete'
+and siid IN (
+SELECT ItemID from str4_notes
+WHERE Note LIKE '%Status->todo%')
+and siid IN (
+SELECT ItemID from str4_notes
+WHERE Note LIKE '%Status->complete%'
+and Moment >= ?
+and Moment <= ?)
+GROUP by siid 
+Order by TradeAssociated , Item, Note ;
+""", (start_date, end_date), result_type='table')
+    completed_forperiod = pd.DataFrame(invoice, columns=columns)
+
+    invoice, columns = DBfunctions.sql_execute("""
+SELECT CONCAT(BuildingName, " " , FrontDoor) as 'Room' , Item , Note , DATE_FORMAT(DATE_SUB(Moment, INTERVAL 5 hour), '%a, %d %b') as 'Date'
+from all_notes_cte
+WHERE Note LIKE '%Status->complete%'
+AND Moment >= ?
+AND Moment <= ?
+ORDER BY Item , Note , Moment ;
+""", (start_date, end_date), result_type='table')
+    markedcomplete = pd.DataFrame(invoice, columns=columns)
+
+    invoice, columns = DBfunctions.sql_execute("""
+SELECT CONCAT(BuildingName, " " , FrontDoor) as 'Room' , Item , Note , DATE_FORMAT(DATE_SUB(Moment, INTERVAL 5 hour), '%a, %d %b') as 'Date'
+from all_notes_cte
+WHERE Note LIKE '%Status->todo%'
+AND Moment >= ?
+AND Moment <= ?
+ORDER BY Item , Note , Moment ;
+""", (start_date, end_date), result_type='table')
+    markedtodo = pd.DataFrame(invoice, columns=columns)
+
     with pd.ExcelWriter('misc reports.xlsx') as writer:
         occupancy_report.to_excel(writer, sheet_name='occupancy', index=False)
-        by_item.to_excel(writer, sheet_name='by_item', index=False)
-        todo_to_complete.to_excel(writer, sheet_name='todo_to_complete', index=False)
-        marked_complete.to_excel(writer, sheet_name='marked_complete', index=False)
-        marked_todo.to_excel(writer, sheet_name='marked_todo', index=False)
-        incomplete_byroom.to_excel(writer, sheet_name='incomplete_byroom', index=False)
+        bybuilding_counts.to_excel(writer, sheet_name='bybuilding_counts', index=False)
+        byitem_counts.to_excel(writer, sheet_name='byitem_counts', index=False)
+        byroom_detail.to_excel(writer, sheet_name='byroom_detail', index=False)
+        incomplete_byroom.to_excel(writer, sheet_name='incompletecounts_byroom', index=False)
+        todo_bypriority.to_excel(writer, sheet_name='todo_bypriority', index=False)
+        completed_forperiod.to_excel(writer, sheet_name='completed_forperiod', index=False)
+        markedcomplete.to_excel(writer, sheet_name='markedcomplete_forperiod', index=False)
+        markedtodo.to_excel(writer, sheet_name='markedtodo_forperiod', index=False)
   
     return True
 
@@ -160,9 +192,11 @@ WHERE Item = ? ;
     
     qms_list = []
     for row in rows:
-        qms_list.append((row[0], a, row[1]))
+        if row[1]:
+            qms_list.append((row[0], a, row[1]))
 
     for qms in qms_list:
+        print(qms)
         DBfunctions.sql_execute("""
 UPDATE str4_notes 
 SET ItemID = (
@@ -291,7 +325,8 @@ where BuildingName = ?
 and FrontDoor = ?
 GROUP by siid 
 -- ORDER by FIELD(Status, 'todo','unmarked','complete'), Item ;
-ORDER by Item ;"""
+ORDER by SortInspect, Item ;
+"""
     qms = (building, room)
     todo_json = DBfunctions.sql_execute(sql_statement, qms, 'json')
 
