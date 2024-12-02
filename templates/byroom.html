@@ -22,7 +22,7 @@ Items by Room
     let heading = document.getElementById("heading");
     heading.innerHTML = "Items Status for Room " + post_data_obj[0].Room;
     
-    let items_data_form = create_form(post_data_obj);
+    let items_data_form = create_form(data_obj=post_data_obj);
 
     let items_div = document.getElementById("items_div");
     items_div.appendChild(items_data_form);

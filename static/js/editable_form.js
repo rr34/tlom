@@ -1,4 +1,4 @@
-function create_form(data_obj) {
+function create_form(data_obj, display_pri=false) {
     let items_data_form=document.createElement('form');
     items_data_form.action="#"
     items_data_form.method='POST'
@@ -27,7 +27,12 @@ function create_form(data_obj) {
             status_select.id='completeselected';
         }
         let sep_txt = ' - ';
-        let label_txt = obj.Room + sep_txt + obj.Item + /*sep_txt + obj.TradeAssociated + sep_txt +*/ '---NOTES---' + obj.Notes + '<br>';
+        if (display_pri) {
+            var label_txt = obj.Priority + sep_txt + 'step ' + obj.SortWork + sep_txt + obj.TradeAssociated + sep_txt + obj.Room + sep_txt + obj.Item + '---NOTES---' + obj.Notes + '<br>';
+        }
+        else {
+            var label_txt = obj.Room + sep_txt + obj.Item + '---NOTES---' + obj.Notes + '<br>';
+        }
         let label_element=document.createElement('label');
         label_element.htmlFor=obj.siid;
         label_element.innerHTML=label_txt;

@@ -122,14 +122,14 @@ ORDER BY COUNT(Status) ;
     incomplete_byroom = pd.DataFrame(invoice, columns=columns)
 
     invoice, columns = DBfunctions.sql_execute("""
-SELECT CONCAT(BuildingName , ' ' ,  FrontDoor) as 'Unit' , Priority , Item , GROUP_CONCAT(CONCAT(Note, " - ", DATE_FORMAT(DATE_SUB(Moment,INTERVAL 5 hour), '%a, %d %b')) order by Moment DESC separator '---') as 'Notes'
+SELECT Priority , SortWork as 'Work Step', TradeAssociated , CONCAT(BuildingName , ' ' ,  FrontDoor) as 'Unit' , Item , GROUP_CONCAT(CONCAT(Note, " - ", DATE_FORMAT(DATE_SUB(Moment,INTERVAL 5 hour), '%a, %d %b')) order by Moment DESC separator '---') as 'Notes'
 from all_notes_cte
 WHERE Status = 'todo'
 and TypeUnit = 'residence'
 GROUP by siid 
-Order by Priority , BuildingName , FrontDoor , Item ;
+Order by Priority , SortWork, BuildingName , FrontDoor , Item ;
 """, (start_date, end_date), result_type='table')
-    todo_bypriority = pd.DataFrame(invoice, columns=columns)
+    todo_ordered = pd.DataFrame(invoice, columns=columns)
 
     invoice, columns = DBfunctions.sql_execute("""
 SELECT TradeAssociated , CONCAT(BuildingName , ' ' ,  FrontDoor) as 'Unit' , Item , GROUP_CONCAT(CONCAT(Note, " - ", DATE_FORMAT(DATE_SUB(Moment,INTERVAL 5 hour), '%a, %d %b')) order by Moment DESC separator '---') as 'Notes'
@@ -174,7 +174,7 @@ ORDER BY Item , Note , Moment ;
         byitem_counts.to_excel(writer, sheet_name='byitem_counts', index=False)
         byroom_detail.to_excel(writer, sheet_name='byroom_detail', index=False)
         incomplete_byroom.to_excel(writer, sheet_name='incompletecounts_byroom', index=False)
-        todo_bypriority.to_excel(writer, sheet_name='todo_bypriority', index=False)
+        todo_ordered.to_excel(writer, sheet_name='todo_ordered', index=False)
         completed_forperiod.to_excel(writer, sheet_name='completed_forperiod', index=False)
         markedcomplete.to_excel(writer, sheet_name='markedcomplete_forperiod', index=False)
         markedtodo.to_excel(writer, sheet_name='markedtodo_forperiod', index=False)
