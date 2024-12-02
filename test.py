@@ -6,7 +6,7 @@ import sqlstatements
 
 # sqlstatements.test()
 
-# sqlstatements.hours_report(['2024-10-28', '2024-11-11', '2024-11-25'], '2024-11-25')
+sqlstatements.hours_report(['2024-10-28', '2024-11-11', '2024-11-25', '2024-12-09'], '2024-12-09')
 
 # sqlstatements.misc_reports('2024-11-11', '2024-11-25')
 

@@ -54,7 +54,7 @@ join people2_people pp on pp.Name = lm.Person
 WHERE BilledCustomer = ?
 and Description IS NOT NULL 
 GROUP BY Description
-ORDER BY Organization, Person;
+ORDER BY Organization, Person, Description;
 """, bill_date, result_type='table')
         byinvoice_report = pd.DataFrame(byinvoice, columns=columns)
     
@@ -335,13 +335,15 @@ ORDER by SortInspect, Item ;
 
 def todo_list_current():
     sql_statement = """
-SELECT CONCAT(BuildingName, " " , FrontDoor) as 'Room' , Item , TradeAssociated , Status , GROUP_CONCAT(CONCAT(Note, " - ", DATE_FORMAT(DATE_SUB(Moment,INTERVAL 5 hour), '%a, %d %b')) order by Moment DESC separator '---') as 'Notes', siid
+SELECT Priority , SortWork , TradeAssociated , CONCAT(BuildingName, " " , FrontDoor) as 'Room' , Item , GROUP_CONCAT(CONCAT(Note, " - ", DATE_FORMAT(DATE_SUB(Moment,INTERVAL 5 hour), '%a, %d %b')) order by Moment DESC separator '---') as 'Notes', Status , siid
 from all_notes_cte
 WHERE Occupancy LIKE '%vacant%'
-AND Priority LIKE 'p%'
 AND Status = 'todo'
+AND Priority LIKE 'p%'
+AND SortWork < 40
 GROUP by siid 
-ORDER by Priority , BuildingName , FrontDoor , Item ;"""
+ORDER by Priority , SortWork, BuildingName , FrontDoor , Item ;
+"""
     qms = False
     todo_json = DBfunctions.sql_execute(sql_statement, qms, 'json')
 
