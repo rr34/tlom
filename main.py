@@ -32,6 +32,16 @@ def byroom():
     # display_this_json_str = display_this_jsonify.get_data(as_text=True)
     return render_template('byroom.html', display_this=display_this_json)
 
+@app.route("/todocurrent", methods=['GET', 'POST'])
+def todocurrent():
+    if request.method == 'POST':
+        post_values = request.form
+        sqlstatements.post_to_db(post_values)
+
+    display_this_json = sqlstatements.todo_list_current()
+    # display_this_json_str = display_this_jsonify.get_data(as_text=True)
+    return render_template('todocurrent.html', display_this=display_this_json)
+
 
 if __name__ == '__main__':
     app.run()

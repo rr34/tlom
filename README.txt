@@ -1,4 +1,5 @@
-feeatures add
+features add
+add bi-weekly report verifier
 add change_status function to site
 add priority label to By Room page
 add metrics page 

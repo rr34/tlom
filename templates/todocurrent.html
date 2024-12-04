@@ -4,14 +4,6 @@ Items by Room
 {% endblock %}
 {% block content %}
 
-<label for="room_selection" id="room_selection">Enter a building and room:</label>
-<form name="room_selection" action="{{ url_for('byroom') }}" method="GET">
-    <label for="building">Building:</label>
-    <input type="text" id="building" name="building">
-    <label for="frontdoor">Room:</label>
-    <input type="text" id="frontdoor" name="frontdoor">
-    <input type="submit" value="Submit">
-</form><br>
 <h1 id="heading"></h1>
 <div id="items_div"></div>
 
@@ -20,9 +12,9 @@ Items by Room
     let post_data_json = '{{ display_this|tojson }}'.replace(/\n/g, "\\n");
     let post_data_obj = JSON.parse(post_data_json);
     let heading = document.getElementById("heading");
-    heading.innerHTML = "Items Status for Room " + post_data_obj[0].Room;
+    heading.innerHTML = "Current To-Do List";
     
-    let items_data_form = create_form(data_obj=post_data_obj);
+    let items_data_form = create_form(data_obj=post_data_obj, display_pri=true);
 
     let items_div = document.getElementById("items_div");
     items_div.appendChild(items_data_form);

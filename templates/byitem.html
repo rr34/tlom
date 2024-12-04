@@ -1,7 +1,29 @@
-function create_form(data_obj, display_pri=false) {
-    let items_data_form=document.createElement('form');
+{% extends "layout.html" %}
+{% block title %}
+Individual Item
+{% endblock %}
+{% block content %}
+
+<label for="item_selection" id="item_selection">Select an Item</label>
+<form name="item_selection" action="{{ url_for('byitem') }}" method="GET">
+    <label for="item">Item:</label>
+    <input type="text" id="item" name="item">
+    <label for="frontdoor">Room:</label>
+    <input type="text" id="frontdoor" name="frontdoor">
+    <input type="submit" value="Submit">
+</form><br>
+<h1 id="heading"></h1>
+
+<script type="text/javascript">
+    let data_json = '{{ display_this|tojson }}'.replace(/\n/g, "\\n");
+    let data_obj = JSON.parse(data_json);
+    const heading = document.getElementById("heading")
+    heading.innerHTML = "Items Status for Room " + data_obj[0].Room;
+
+    var items_data_form=document.createElement('form');
     items_data_form.action="#"
     items_data_form.method='POST'
+    let items_div=document.getElementById('items_div')
     data_obj.forEach(function(obj) {
         let status_select=document.createElement('select');
         status_select.name='siid ' + obj.siid;
@@ -10,29 +32,21 @@ function create_form(data_obj, display_pri=false) {
         unmarked_opt.innerHTML='unmarked';
         if (obj.Status=='unmarked') {
             unmarked_opt.selected=true;
-            status_select.id='unmarkedselected';
         }
         let todo_opt=document.createElement('option');
         todo_opt.value='todo';
         todo_opt.innerHTML='todo';
         if (obj.Status=='todo') {
             todo_opt.selected=true;
-            status_select.id='todoselected';
         }
         let complete_opt=document.createElement('option');
         complete_opt.value='complete';
         complete_opt.innerHTML='complete';
         if (obj.Status=='complete') {
             complete_opt.selected=true;
-            status_select.id='completeselected';
         }
         let sep_txt = ' - ';
-        if (display_pri) {
-            var label_txt = obj.Priority + sep_txt + 'step ' + obj.SortWork + sep_txt + obj.TradeAssociated + sep_txt + obj.Room + sep_txt + obj.Item + '---NOTES---' + obj.Notes + '<br>';
-        }
-        else {
-            var label_txt = obj.Room + sep_txt + obj.Item + '---NOTES---' + obj.Notes + '<br>';
-        }
+        let label_txt = obj.Room + sep_txt + obj.Item + /*sep_txt + obj.TradeAssociated + sep_txt +*/ '---NOTES---' + obj.Notes + '<br>';
         let label_element=document.createElement('label');
         label_element.htmlFor=obj.siid;
         label_element.innerHTML=label_txt;
@@ -51,6 +65,6 @@ function create_form(data_obj, display_pri=false) {
     // submit_element.onclick='send_statuses()';
     submit_element.innerHTML='Submit';
     items_data_form.appendChild(submit_element);
-
-    return items_data_form;
-}
+    document.body.appendChild(items_data_form);
+</script>
+{% endblock %}
