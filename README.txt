@@ -1,9 +1,8 @@
 features add
-add bi-weekly report verifier
+add a feature to set the status of a single item in all rooms in property
 add change_status function to site
 add priority label to By Room page
 add metrics page 
-merge branch and start new branch
 log hours
 report hours
 report completed items
@@ -22,3 +21,5 @@ host data with a separate site accessed by IP address 108.174.197.50
 
 snapshot meaningful data
 snapshot all tables raw
+
+DONE add bi-weekly report verifier
