@@ -323,6 +323,7 @@ SELECT CONCAT(BuildingName, " " , FrontDoor) as 'Unit' , Item , Trade , Status ,
 from all_notes_cte
 where BuildingName = ?
 and FrontDoor = ?
+and SortInspect < 100
 GROUP by siid 
 -- ORDER by FIELD(Status, 'todo','unmarked','complete'), Item ;
 ORDER by SortInspect, Item ;
