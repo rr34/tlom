@@ -20,7 +20,7 @@ Items by Room
     let post_data_json = '{{ display_this|tojson }}'.replace(/\n/g, "\\n");
     let post_data_obj = JSON.parse(post_data_json);
     let heading = document.getElementById("heading");
-    heading.innerHTML = "Items Status for Room " + post_data_obj[0].Room;
+    heading.innerHTML = "Items Status for Room " + post_data_obj[0].Unit;
     
     let items_data_form = create_form(data_obj=post_data_obj);
 
