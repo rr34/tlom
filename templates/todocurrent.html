@@ -4,6 +4,14 @@ To-Do by Priority
 {% endblock %}
 {% block content %}
 
+<!-- <label for="trade_selection" id="trade_selection">Enter trade:</label> -->
+<form name="trade_selection" action="{{ url_for('todocurrent') }}" method="GET">
+    <label for="trade">Enter Trade:</label>
+    <input type="text" id="trade" name="trade">
+    <input type="submit" value="Submit">
+</form><br>
+
+
 <h1 id="heading"></h1>
 
 <script type="text/javascript" src="{{ url_for('static', filename='js/by_priority.js') }}"></script>

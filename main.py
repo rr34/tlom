@@ -22,6 +22,7 @@ def byroom():
     if request.method == 'POST':
         post_values = request.form
         sqlstatements.post_to_db(post_values)
+
     try:
         building = request.args['building']
         room = request.args['frontdoor']
@@ -34,7 +35,11 @@ def byroom():
 
 @app.route("/todocurrent", methods=['GET'])
 def todocurrent():
-    display_this_json = sqlstatements.todo_list_current()
+    try:
+        trade = request.args['trade']
+    except:
+        trade=False
+    display_this_json = sqlstatements.todo_list_current(specify_trade=trade)
 
     return render_template('todocurrent.html', display_this=display_this_json)
 

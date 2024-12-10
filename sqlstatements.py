@@ -334,19 +334,34 @@ ORDER by SortInspect, Item ;
     return todo_json
 
 
-def todo_list_current():
-    sql_statement = """
+def todo_list_current(specify_trade=False):
+    if not specify_trade:
+        sql_statement = """
 SELECT Priority , CONCAT(BuildingName, " " , FrontDoor) as 'Unit' , Step , Item , GROUP_CONCAT(CONCAT(Note, " - ", DATE_FORMAT(DATE_SUB(Moment,INTERVAL 5 hour), '%a, %d %b')) order by Moment DESC separator '---') as 'Notes', Trade , Status , siid
 from all_notes_cte
 WHERE Occupancy LIKE '%vacant%'
 AND Status = 'todo'
 AND Priority LIKE 'p%'
--- AND Step < 100
+AND Step < 100
 GROUP by siid 
 ORDER by Priority , BuildingName , FrontDoor , Step , Item ;
 """
-    qms = False
-    todo_json = DBfunctions.sql_execute(sql_statement, qms, 'json')
+        qms = False
+        todo_json = DBfunctions.sql_execute(sql_statement, qms, 'json')
+    elif specify_trade:
+        sql_statement = """
+SELECT Priority , CONCAT(BuildingName, " " , FrontDoor) as 'Unit' , Step , Item , GROUP_CONCAT(CONCAT(Note, " - ", DATE_FORMAT(DATE_SUB(Moment,INTERVAL 5 hour), '%a, %d %b')) order by Moment DESC separator '---') as 'Notes', Trade , Status , siid
+from all_notes_cte
+WHERE Occupancy LIKE '%vacant%'
+AND Status = 'todo'
+AND Priority LIKE 'p%'
+AND Step < 100
+AND Trade = ?
+GROUP by siid 
+ORDER by Priority , BuildingName , FrontDoor , Step , Item ;
+"""
+        qms = (specify_trade,)
+        todo_json = DBfunctions.sql_execute(sql_statement, qms, 'json')
 
     return todo_json
 
