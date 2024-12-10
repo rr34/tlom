@@ -38,5 +38,11 @@ def todocurrent():
 
     return render_template('todocurrent.html', display_this=display_this_json)
 
+@app.route("/roomsbypriority", methods=['GET'])
+def roomsbypriority():
+    display_this_json = sqlstatements.todo_list_current()
+
+    return render_template('roomsbypriority.html', display_this=display_this_json)
+
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=8080)
