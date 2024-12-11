@@ -1,13 +1,13 @@
 features add
+enable to run after SSH disconnect
+completed items running ticker
+use Gunicorn instead of dev server
 add a feature to set the status of a single item in all rooms in property
 add change_status function to site
 add priority label to By Room page
-add metrics page 
+convert misc reports to a page 
 log hours
 report hours
-report completed items
-incorporate todo list from DBeaver sql on home computer into code and show in online table or editable view / form
-establish a way to update status by room online - form?
 
 Display SQL results of room conditions.
 Display SQL results of hours.
@@ -23,3 +23,5 @@ snapshot meaningful data
 snapshot all tables raw
 
 DONE add bi-weekly report verifier
+DONE incorporate todo list from DBeaver sql on home computer into code and show in online table or editable view / form
+DONE establish a way to update status by room online - form?
