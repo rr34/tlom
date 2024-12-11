@@ -49,5 +49,11 @@ def roomsbypriority():
 
     return render_template('roomsbypriority.html', display_this=display_this_json)
 
+@app.route("/turnedrooms", methods=['GET'])
+def turnedrooms():
+    display_this_json = sqlstatements.turned_rooms()
+
+    return render_template('turnedrooms.html', display_this=display_this_json)
+
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=8080)
