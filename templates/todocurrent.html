@@ -1,22 +1,27 @@
 {% extends "layout.html" %}
 {% block title %}
-Items by Room
+To-Do by Priority
 {% endblock %}
 {% block content %}
 
-<h1 id="heading"></h1>
-<div id="items_div"></div>
+<!-- <label for="trade_selection" id="trade_selection">Enter trade:</label> -->
+<form name="trade_selection" action="{{ url_for('todocurrent') }}" method="GET">
+    <label for="trade">Enter Trade:</label>
+    <input type="text" id="trade" name="trade">
+    <input type="submit" value="Submit">
+</form><br>
 
-<script type="text/javascript" src="{{ url_for('static', filename='js/editable_form.js') }}"></script>
+
+<h1 id="heading"></h1>
+
+<script type="text/javascript" src="{{ url_for('static', filename='js/by_priority.js') }}"></script>
 <script type="text/javascript">
     let post_data_json = '{{ display_this|tojson }}'.replace(/\n/g, "\\n");
     let post_data_obj = JSON.parse(post_data_json);
     let heading = document.getElementById("heading");
-    heading.innerHTML = "Current To-Do List";
-    
-    let items_data_form = create_form(data_obj=post_data_obj, display_pri=true);
+    heading.innerHTML = "Current To-Do List by Priority";
 
-    let items_div = document.getElementById("items_div");
-    items_div.appendChild(items_data_form);
+    let items_div = by_priority(data_obj=post_data_obj)
+        document.body.appendChild(items_div);
 </script>
 {% endblock %}
