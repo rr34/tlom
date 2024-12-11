@@ -28,10 +28,10 @@ function create_form(data_obj, display_pri=false) {
         }
         let sep_txt = ' - ';
         if (display_pri) {
-            var label_txt = obj.Priority + sep_txt + obj.Unit + sep_txt + 'Step ' + obj.Step + sep_txt + obj.Item + sep_txt + obj.Trade + '---NOTES---' + obj.Notes + '<br>';
+            var label_txt = obj.Priority + sep_txt + obj.Unit + sep_txt + 'Step ' + obj.Step + sep_txt + '<b>' + obj.Item + '</b>' + sep_txt + obj.Trade + '---NOTES---' + obj.Notes + '<br><br>';
         }
         else {
-            var label_txt = obj.Unit + sep_txt + obj.Item + ' ---NOTES--- ' + obj.Notes + '<br>';
+            var label_txt = obj.Unit + sep_txt + '<b>' + obj.Item + '</b>' + ' ---NOTES--- ' + obj.Notes + '<br><br>';
         }
         let label_element=document.createElement('label');
         label_element.htmlFor=obj.siid;
