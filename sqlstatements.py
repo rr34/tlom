@@ -122,7 +122,7 @@ ORDER BY COUNT(Status) ;
     incomplete_byroom = pd.DataFrame(invoice, columns=columns)
 
     invoice, columns = DBfunctions.sql_execute("""
-SELECT Priority , Step, Trade , CONCAT(BuildingName , ' ' ,  FrontDoor) as 'Unit' , Item , GROUP_CONCAT(CONCAT(Note, " - ", DATE_FORMAT(DATE_SUB(Moment,INTERVAL 5 hour), '%a, %d %b')) order by Moment DESC separator '---') as 'Notes'
+SELECT Priority , Step, Trade , CONCAT(BuildingName , ' ' ,  FrontDoor) as 'Unit' , Item , GROUP_CONCAT(CONCAT(Note, " - ", DATE_FORMAT(DATE_SUB(Moment,INTERVAL 5 hour), '%a, %e %b')) order by Moment DESC separator '---') as 'Notes'
 from all_notes_cte
 WHERE Status = 'todo'
 and TypeUnit = 'residence'
@@ -132,7 +132,7 @@ Order by Priority , Step, BuildingName , FrontDoor , Item ;
     todo_ordered = pd.DataFrame(invoice, columns=columns)
 
     invoice, columns = DBfunctions.sql_execute("""
-SELECT Trade , CONCAT(BuildingName , ' ' ,  FrontDoor) as 'Unit' , Item , GROUP_CONCAT(CONCAT(Note, " - ", DATE_FORMAT(DATE_SUB(Moment,INTERVAL 5 hour), '%a, %d %b')) order by Moment DESC separator '---') as 'Notes'
+SELECT Trade , CONCAT(BuildingName , ' ' ,  FrontDoor) as 'Unit' , Item , GROUP_CONCAT(CONCAT(Note, " - ", DATE_FORMAT(DATE_SUB(Moment,INTERVAL 5 hour), '%a, %e %b')) order by Moment DESC separator '---') as 'Notes'
 from all_notes_cte
 WHERE Status = 'complete'
 and siid IN (
@@ -149,7 +149,7 @@ Order by Trade , Item, Note ;
     completed_forperiod = pd.DataFrame(invoice, columns=columns)
 
     invoice, columns = DBfunctions.sql_execute("""
-SELECT CONCAT(BuildingName, " " , FrontDoor) as 'Room' , Item , Note , DATE_FORMAT(DATE_SUB(Moment, INTERVAL 5 hour), '%a, %d %b') as 'Date'
+SELECT CONCAT(BuildingName, " " , FrontDoor) as 'Room' , Item , Note , DATE_FORMAT(DATE_SUB(Moment, INTERVAL 5 hour), '%a, %e %b') as 'Date'
 from all_notes_cte
 WHERE Note LIKE '%Status->complete%'
 AND Moment >= ?
@@ -159,7 +159,7 @@ ORDER BY Item , Note , Moment ;
     markedcomplete = pd.DataFrame(invoice, columns=columns)
 
     invoice, columns = DBfunctions.sql_execute("""
-SELECT CONCAT(BuildingName, " " , FrontDoor) as 'Room' , Item , Note , DATE_FORMAT(DATE_SUB(Moment, INTERVAL 5 hour), '%a, %d %b') as 'Date'
+SELECT CONCAT(BuildingName, " " , FrontDoor) as 'Room' , Item , Note , DATE_FORMAT(DATE_SUB(Moment, INTERVAL 5 hour), '%a, %e %b') as 'Date'
 from all_notes_cte
 WHERE Note LIKE '%Status->todo%'
 AND Moment >= ?
@@ -319,7 +319,7 @@ WHERE siid in (%s) ; """ % esses
 
 def todo_list_room(building, room):
     sql_statement = """
-SELECT CONCAT(BuildingName, " " , FrontDoor) as 'Unit' , Item , Trade , Status , GROUP_CONCAT(CONCAT(Note, " - ", DATE_FORMAT(DATE_SUB(Moment,INTERVAL 5 hour), '%a, %d %b')) order by Moment DESC separator '---') as 'Notes', siid
+SELECT CONCAT(BuildingName, " " , FrontDoor) as 'Unit' , Item , Trade , Status , GROUP_CONCAT(CONCAT(Note, " - ", DATE_FORMAT(DATE_SUB(Moment,INTERVAL 5 hour), '%a, %e %b')) order by Moment DESC separator '---') as 'Notes', siid
 from all_notes_cte
 where BuildingName = ?
 and FrontDoor = ?
@@ -337,7 +337,7 @@ ORDER by SortInspect, Item ;
 def todo_list_current(specify_trade=False):
     if not specify_trade:
         sql_statement = """
-SELECT Priority , CONCAT(BuildingName, " " , FrontDoor) as 'Unit' , Step , Item , GROUP_CONCAT(CONCAT(Note, " - ", DATE_FORMAT(DATE_SUB(Moment,INTERVAL 5 hour), '%a, %d %b')) order by Moment DESC separator '---') as 'Notes', Trade , Status , siid
+SELECT Priority , CONCAT(BuildingName, " " , FrontDoor) as 'Unit' , Step , Item , GROUP_CONCAT(CONCAT(Note, " - ", DATE_FORMAT(DATE_SUB(Moment,INTERVAL 5 hour), '%a, %e %b')) order by Moment DESC separator '---') as 'Notes', Trade , Status , siid
 from all_notes_cte
 WHERE Occupancy LIKE '%vacant%'
 AND Status = 'todo'
@@ -351,7 +351,7 @@ ORDER by Priority , BuildingName , FrontDoor , Step , Item ;
         todo_json = DBfunctions.sql_execute(sql_statement, qms, 'json')
     elif specify_trade:
         sql_statement = """
-SELECT Priority , CONCAT(BuildingName, " " , FrontDoor) as 'Unit' , Step , Item , GROUP_CONCAT(CONCAT(Note, " - ", DATE_FORMAT(DATE_SUB(Moment,INTERVAL 5 hour), '%a, %d %b')) order by Moment DESC separator '---') as 'Notes', Trade , Status , siid
+SELECT Priority , CONCAT(BuildingName, " " , FrontDoor) as 'Unit' , Step , Item , GROUP_CONCAT(CONCAT(Note, " - ", DATE_FORMAT(DATE_SUB(Moment,INTERVAL 5 hour), '%a, %e %b')) order by Moment DESC separator '---') as 'Notes', Trade , Status , siid
 from all_notes_cte
 WHERE Occupancy LIKE '%vacant%'
 AND Status = 'todo'
@@ -369,7 +369,7 @@ ORDER by Priority , BuildingName , FrontDoor , Step , Item ;
 
 def turned_rooms():
     sql_statement = """
-SELECT Priority , CONCAT(BuildingName, " " , FrontDoor) as 'Unit' , Step , Item , GROUP_CONCAT(CONCAT(Note, " - ", DATE_FORMAT(DATE_SUB(Moment,INTERVAL 5 hour), '%a, %d %b')) order by Moment DESC separator '---') as 'Notes', Status , OriginalOccupancy , siid
+SELECT Priority , CONCAT(BuildingName, " " , FrontDoor) as 'Unit' , Step , Item , GROUP_CONCAT(CONCAT(Note, " - ", DATE_FORMAT(DATE_SUB(Moment,INTERVAL 5 hour), '%a, %e %b')) order by Moment DESC separator '---') as 'Notes', Status , OriginalOccupancy , siid
 from all_notes_cte
 WHERE (Status = 'todo'
 OR Item = 'Priority and Occupancy')
@@ -378,6 +378,35 @@ GROUP by siid
 ORDER by BuildingName , FrontDoor , Step , Item ;
 """
     qms = False
+    todo_json = DBfunctions.sql_execute(sql_statement, qms, 'json')
+
+    return todo_json
+
+def all_notes_ticker(look_back):
+    sql_statement = """
+SELECT DATE_FORMAT(DATE_SUB(Moment,INTERVAL 5 hour), '%a, %e %b') as 'Day', DATE_FORMAT(DATE_SUB(Moment,INTERVAL 5 hour), '%H:%i') as 'Time', CONCAT(BuildingName , ' ' ,  FrontDoor) as 'Unit' , Item , Note 
+from all_notes_cte
+WHERE Moment >= DATE_SUB(NOW(),INTERVAL ? day)
+Order by Moment DESC ;
+"""
+    qms = (look_back,)
+    todo_json = DBfunctions.sql_execute(sql_statement, qms, 'json')
+
+    return todo_json
+
+def completed_ticker(look_back):
+    sql_statement = """
+SELECT DATE_FORMAT(DATE_SUB(Moment,INTERVAL 5 hour), '%a, %e %b') as 'Day', DATE_FORMAT(DATE_SUB(Moment,INTERVAL 5 hour), '%H:%i') as 'Time', CONCAT(BuildingName , ' ' ,  FrontDoor) as 'Unit' , Item , Note 
+from all_notes_cte
+WHERE Status = 'complete'
+and siid IN (
+SELECT ItemID from str4_notes
+WHERE Note LIKE '%Status->todo%')
+and Note LIKE '%Status->complete%'
+and Moment >= DATE_SUB(NOW(),INTERVAL ? day)
+Order by Moment DESC ;
+"""
+    qms = (look_back,)
     todo_json = DBfunctions.sql_execute(sql_statement, qms, 'json')
 
     return todo_json

@@ -55,5 +55,17 @@ def turnedrooms():
 
     return render_template('turnedrooms.html', display_this=display_this_json)
 
+@app.route("/allnotesticker", methods=['GET'])
+def allnotesticker():
+    display_this_json = sqlstatements.all_notes_ticker(look_back=14)
+
+    return render_template('completedticker.html', display_this=display_this_json)
+
+@app.route("/completedticker", methods=['GET'])
+def completedticker():
+    display_this_json = sqlstatements.completed_ticker(look_back=14)
+
+    return render_template('completedticker.html', display_this=display_this_json)
+
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=8080)
