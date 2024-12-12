@@ -59,7 +59,7 @@ def turnedrooms():
 def allnotesticker():
     display_this_json = sqlstatements.all_notes_ticker(look_back=14)
 
-    return render_template('completedticker.html', display_this=display_this_json)
+    return render_template('allnotesticker.html', display_this=display_this_json)
 
 @app.route("/completedticker", methods=['GET'])
 def completedticker():
