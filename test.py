@@ -6,15 +6,15 @@ import sqlstatements
 
 # sqlstatements.test()
 
-sqlstatements.hours_report(['2024-10-28', '2024-11-11', '2024-11-25', '2024-12-09'], '2024-12-09')
+# sqlstatements.hours_report(['2024-10-28', '2024-11-11', '2024-11-25', '2024-12-09'], '2024-12-09')
 
 # sqlstatements.misc_reports('2024-12-01 05:00:00', '2024-12-09 05:00:00') # includes the first date, not the second
 
-# building = 'c'
-# rooms_list = (109,208,210,211,212,303,304,308,309,310,313) # if single room number, requires a comma after
-# item = 'clean' # not case-sensitive
-# status = 'todo' # todo / complete / unmarked
-# note = 'Prepare to present.'
+building = 'c'
+rooms_list = (109,208,210,211,212,303,304,308,309,310,313) # if single room number, requires a comma after
+item = 'clean' # not case-sensitive
+status = 'todo' # todo / complete / unmarked
+note = 'Prepare to present.'
 
 # sqlstatements.change_status(building, rooms_list, item, status, note)
 
