@@ -15,10 +15,10 @@ def sql_execute(text, user_input, result_type):
         # )
         conn = mariadb.connect(
             user="nate",
-            host="108.174.197.50",
+            host="23.254.144.125",
             password='hiatus32',
             port=3306,
-            database="carruffdb"
+            database="tlom"
         )
     except mariadb.Error as e:
         print(f"Error connecting to MariaDB platform: {e}")
