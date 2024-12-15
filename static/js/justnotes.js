@@ -12,7 +12,7 @@ function justnotes (data_obj) {
 
         let sep_txt = ' - ';
         let new_item = document.createElement('p');
-        new_item.innerHTML = obj.Time + sep_txt + obj.Unit + sep_txt + obj.Item + sep_txt + obj.Note;
+        new_item.innerHTML = obj.Day + ' ' + obj.Time + sep_txt + obj.Unit + sep_txt + obj.Item + sep_txt + obj.Note;
         items_div.appendChild(new_item);
     });
 
