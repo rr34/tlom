@@ -19,8 +19,7 @@ function by_priority (data_obj) {
         }
         let sep_txt = ' - ';
         let new_item = document.createElement('p');
-        let new_text = document.createTextNode('Step ' + obj.Step + sep_txt + '<b>' + obj.Item + '</b>' + ' ---NOTES--- ' + obj.Notes);
-        new_item.appendChild(new_text);
+        new_item.innerHTML = 'Step ' + obj.Step + sep_txt + '<b>' + obj.Item + '</b>' + ' ---NOTES--- ' + obj.Notes;
         items_div.appendChild(new_item);
     });
 
