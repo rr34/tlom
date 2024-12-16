@@ -60,9 +60,9 @@ def sql_execute_pd(text, user_input):
     try:
         conn = mysql.connector.connect(
             user="nate",
-            host="108.174.197.50",
+            host="23.254.144.125",
             port=3306,
-            database="carruffdb"
+            database="tlom"
         )
     except mysql.connector.Error as e:
         print(f"Error connecting to MariaDB platform: {e}")
