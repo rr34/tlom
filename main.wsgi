@@ -6,18 +6,18 @@ from flask import Flask, render_template, request
 import time
 import sqlstatements
 
-app = Flask(__name__)
+application = Flask(__name__)
 
-@app.route("/")
+@application.route("/")
 def home():
     return render_template('home.html')
 
 
-@app.route("/tasksstatus", methods=['GET'])
+@application.route("/tasksstatus", methods=['GET'])
 def tasksstatus():
     return render_template('resultstable.html')
 
-@app.route("/byroom", methods=['GET', 'POST'])
+@application.route("/byroom", methods=['GET', 'POST'])
 def byroom():
     if request.method == 'POST':
         post_values = request.form
@@ -33,7 +33,7 @@ def byroom():
     # display_this_json_str = display_this_jsonify.get_data(as_text=True)
     return render_template('byroom.html', display_this=display_this_json)
 
-@app.route("/todocurrent", methods=['GET'])
+@application.route("/todocurrent", methods=['GET'])
 def todocurrent():
     try:
         trade = request.args['trade']
@@ -43,29 +43,29 @@ def todocurrent():
 
     return render_template('todocurrent.html', display_this=display_this_json)
 
-@app.route("/roomsbypriority", methods=['GET'])
+@application.route("/roomsbypriority", methods=['GET'])
 def roomsbypriority():
     display_this_json = sqlstatements.todo_list_current()
 
     return render_template('roomsbypriority.html', display_this=display_this_json)
 
-@app.route("/turnedrooms", methods=['GET'])
+@application.route("/turnedrooms", methods=['GET'])
 def turnedrooms():
     display_this_json = sqlstatements.turned_rooms()
 
     return render_template('turnedrooms.html', display_this=display_this_json)
 
-@app.route("/allnotesticker", methods=['GET'])
+@application.route("/allnotesticker", methods=['GET'])
 def allnotesticker():
     display_this_json = sqlstatements.all_notes_ticker(look_back=14)
 
     return render_template('allnotesticker.html', display_this=display_this_json)
 
-@app.route("/completedticker", methods=['GET'])
+@application.route("/completedticker", methods=['GET'])
 def completedticker():
     display_this_json = sqlstatements.completed_ticker(look_back=14)
 
     return render_template('completedticker.html', display_this=display_this_json)
 
 if __name__ == '__main__':
-    app.run(host='0.0.0.0', port=8080)
+    application.run(host='0.0.0.0', port=8080)
