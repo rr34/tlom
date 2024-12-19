@@ -1,0 +1,15 @@
+{% extends "layout.html" %}
+{% block title %}
+CarRuff TLOM for 7300 Huntington Park Dr
+{% endblock %}
+{% block content %}
+
+<form name="all_rooms_report" action="{{ url_for('current_vacant') }}" method="POST">
+    <label for="building_select">Select Building: </label>
+    <input type="text" id="building_select" name="building_select"><br>
+    <textarea id="all_rooms_txt" name="all_rooms_txt" rows="25" columns="1000"></textarea>
+    <input type="submit" value="Submit">
+</form><br>
+
+
+{% endblock %}

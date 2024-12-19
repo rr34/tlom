@@ -67,5 +67,18 @@ def completedticker():
 
     return render_template('completedticker.html', display_this=display_this_json)
 
+@application.route("/current_vacant", methods=['GET','POST'])
+def current_vacant():
+    try:
+        building = request.values['building_select']
+        all_rooms_txt = request.values['all_rooms_txt']
+    except:
+        building = False
+    
+    if building:
+        display_this_json = sqlstatements.current_vacant_tool(building=building, all_rooms_txt=all_rooms_txt)
+
+    return render_template('current_vacant.html')
+
 if __name__ == '__main__':
     application.run(host='0.0.0.0', port=8080)

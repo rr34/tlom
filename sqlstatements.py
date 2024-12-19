@@ -3,6 +3,7 @@ import DBfunctions
 import datetime
 import pandas as pd
 import openpyxl
+import re
 
 def test():
     execute_this = """
@@ -571,3 +572,29 @@ WHERE siid in (%s) ; """ % esses
 
 
     return True
+
+
+def current_vacant_tool(building, all_rooms_txt):
+    # regex_pattern = re.compile(r'/(?<=\n)\d{3}(?=[\w ]*((OUT OF ORDER)|(CHECKED OUT)))', re.MULTILINE)
+    regex_pattern = re.compile(r'(?<=\n)\d{3}(?=[\w ]*OUT OF ORDER)', re.MULTILINE)
+    vacants_current = re.findall(regex_pattern, all_rooms_txt)
+    regex_pattern = re.compile(r'(?<=\n)\d{3}(?=[\w ]*CHECKED OUT)', re.MULTILINE)
+    vacants_current += re.findall(regex_pattern, all_rooms_txt)
+    regex_pattern = re.compile(r'(?<=\n)\d{3}(?=[\w ]*AVAILABLE)', re.MULTILINE)
+    vacants_current += re.findall(regex_pattern, all_rooms_txt)
+    regex_pattern2 = re.compile(r'(?<=\n)\d{3}(?=[\w ]*^(INHOUSE))', re.MULTILINE)
+    vacants_current2 = re.findall(regex_pattern, all_rooms_txt)
+
+    sql_statement = """
+SELECT CONCAT(BuildingName, " " , FrontDoor) as 'Unit'
+from all_items_cte
+WHERE BuildingName in ?
+AND FrontDoor in ?
+AND Occupancy NOT LIKE '%vacant%'
+ORDER by BuildingName , FrontDoor ;
+"""
+    qms = (('a',), tuple(vacants_current))
+    todo_json = DBfunctions.sql_execute(sql_statement, qms, 'json')
+
+
+    print(vacants_current)
