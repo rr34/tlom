@@ -76,9 +76,12 @@ def current_vacant():
         building = False
     
     if building:
-        display_this_json = sqlstatements.current_vacant_tool(building=building, all_rooms_txt=all_rooms_txt)
+        new_vacants, new_occupieds = sqlstatements.current_vacant_tool(building=building, all_rooms_txt=all_rooms_txt)
+    else:
+        new_vacants = False
+        new_occupieds = False
 
-    return render_template('current_vacant.html')
+    return render_template('current_vacant.html', new_v=new_vacants, new_o=new_occupieds)
 
 if __name__ == '__main__':
     application.run(host='0.0.0.0', port=8080)

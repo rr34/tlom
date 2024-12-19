@@ -290,7 +290,7 @@ def change_status(building, rooms_list, item, status, note):
 SELECT siid from all_items_cte
 WHERE BuildingName = %%s
 AND FrontDoor in (%s)
-AND Item = %%s ;""" % esses
+AND Item = %%s ; """ % esses
     qms = (building,) + rooms_list + (item,)
     siid_list, columns = DBfunctions.sql_execute(sql_statement, qms, 'table')
     print(len(siid_list))
@@ -575,26 +575,50 @@ WHERE siid in (%s) ; """ % esses
 
 
 def current_vacant_tool(building, all_rooms_txt):
-    # regex_pattern = re.compile(r'/(?<=\n)\d{3}(?=[\w ]*((OUT OF ORDER)|(CHECKED OUT)))', re.MULTILINE)
     regex_pattern = re.compile(r'(?<=\n)\d{3}(?=[\w ]*OUT OF ORDER)', re.MULTILINE)
     vacants_current = re.findall(regex_pattern, all_rooms_txt)
     regex_pattern = re.compile(r'(?<=\n)\d{3}(?=[\w ]*CHECKED OUT)', re.MULTILINE)
     vacants_current += re.findall(regex_pattern, all_rooms_txt)
     regex_pattern = re.compile(r'(?<=\n)\d{3}(?=[\w ]*AVAILABLE)', re.MULTILINE)
     vacants_current += re.findall(regex_pattern, all_rooms_txt)
-    regex_pattern2 = re.compile(r'(?<=\n)\d{3}(?=[\w ]*^(INHOUSE))', re.MULTILINE)
-    vacants_current2 = re.findall(regex_pattern, all_rooms_txt)
+    vacants_current_tuple = tuple([int(x) for x in vacants_current])
 
+    esses = ','.join(['%s'] * len(vacants_current_tuple))
     sql_statement = """
-SELECT CONCAT(BuildingName, " " , FrontDoor) as 'Unit'
+SELECT CONCAT(BuildingName, " " , FrontDoor) as 'Unit', FrontDoor
 from all_items_cte
-WHERE BuildingName in ?
-AND FrontDoor in ?
-AND Occupancy NOT LIKE '%vacant%'
+WHERE (BuildingName = %%s
+OR BuildingName = %%s)
+AND FrontDoor in (%s)
+AND Occupancy = 'occupied'
+GROUP by BuildingName , FrontDoor
 ORDER by BuildingName , FrontDoor ;
-"""
-    qms = (('a',), tuple(vacants_current))
-    todo_json = DBfunctions.sql_execute(sql_statement, qms, 'json')
+""" % esses
+    if building == 'a':
+        qms = ('a',) + ('a',) + vacants_current_tuple
+    elif building == 'b':
+        qms = ('b',) + ('c',) + vacants_current_tuple
+    new_vacants = DBfunctions.sql_execute(sql_statement, qms, 'json')
 
+    regex_pattern = re.compile(r'(?<=\n)\d{3}(?=[\w ]*INHOUSE)', re.MULTILINE)
+    occupieds_current = re.findall(regex_pattern, all_rooms_txt)
+    occupieds_current_tuple = tuple([int(x) for x in occupieds_current])
 
-    print(vacants_current)
+    esses = ','.join(['%s'] * len(occupieds_current))
+    sql_statement = """
+SELECT CONCAT(BuildingName, " " , FrontDoor) as 'Unit', FrontDoor
+from all_items_cte
+WHERE (BuildingName = %%s
+OR BuildingName = %%s)
+AND FrontDoor in (%s)
+AND Occupancy = 'vacant'
+GROUP by BuildingName , FrontDoor
+ORDER by BuildingName , FrontDoor ;
+""" % esses
+    if building == 'a':
+        qms = ('a',) + ('a',) + occupieds_current_tuple
+    elif building == 'b':
+        qms = ('b',) + ('c',) + occupieds_current_tuple
+    new_occupieds = DBfunctions.sql_execute(sql_statement, qms, 'json')
+
+    return new_vacants, new_occupieds

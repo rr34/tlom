@@ -11,5 +11,24 @@ CarRuff TLOM for 7300 Huntington Park Dr
     <input type="submit" value="Submit">
 </form><br>
 
+<script type="text/javascript" src="{{ url_for('static', filename='js/list_rooms.js') }}"></script>
+<script type="text/javascript">
+    let post_data_json1 = '{{ new_v|tojson }}'.replace(/\n/g, "\\n");
+    let post_data_obj1 = JSON.parse(post_data_json1);
+    let heading1 = document.createElement("h3");
+    heading1.innerHTML = "New Vacants";
+    document.body.appendChild(heading1)
+    let items_div1 = list_rooms(data_obj=post_data_obj1);
+    document.body.appendChild(items_div1);
+    
+    let post_data_json2 = '{{ new_o|tojson }}'.replace(/\n/g, "\\n");
+    let post_data_obj2 = JSON.parse(post_data_json2);
+    let heading2 = document.createElement("h3");
+    heading2.innerHTML = "New Occupieds";
+    document.body.appendChild(heading2)
+    let items_div2 = list_rooms(data_obj=post_data_obj2);
+    document.body.appendChild(items_div2);
+</script>
+
 
 {% endblock %}
