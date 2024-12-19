@@ -320,7 +320,7 @@ WHERE siid in (%s) ; """ % esses
 
 def todo_list_room(building, room):
     sql_statement = """
-SELECT CONCAT(BuildingName, " " , FrontDoor) as 'Unit' , Item , Trade , Status , GROUP_CONCAT(CONCAT(Note, " - ", DATE_FORMAT(DATE_SUB(Moment,INTERVAL 5 hour), '%a, %e %b')) order by Moment DESC separator '---') as 'Notes', siid
+SELECT CONCAT(BuildingName, " " , FrontDoor) as 'Unit' , Item , Trade , Status , GROUP_CONCAT(CONCAT(Note, " - ", DATE_FORMAT(DATE_SUB(Moment,INTERVAL 5 hour), '%a, %e %b')) order by Moment DESC separator '---') as 'Notes', Priority , siid
 from all_notes_cte
 where BuildingName = ?
 and FrontDoor = ?

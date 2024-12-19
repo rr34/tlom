@@ -2,7 +2,6 @@ features add
 enable to run after SSH disconnect, deploy on second server, use mod_WSGI instead of dev server
 add a password
 add user label to notes
-fix the <b> </b> thing on the todo list
 add priority label to By Room page
 add a feature to set the status of a single item in all rooms in property
 add change_status function to site - or not. do manually
