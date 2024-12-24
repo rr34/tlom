@@ -74,6 +74,26 @@ ORDER BY Organization, Person, Description;
 
 def misc_reports(start_date, end_date):
     invoice, columns = DBfunctions.sql_execute("""
+SELECT CONCAT(BuildingName, " " , FrontDoor) as 'Unit', Occupancy , OriginalOccupancy 
+from all_notes_cte anc 
+WHERE TypeUnit = 'residence'
+AND (OriginalOccupancy = 'occupied'
+OR Occupancy = 'occupied'
+OR Priority = 'p0')
+GROUP BY BuildingName , FrontDoor 
+ORDER by BuildingName , FrontDoor ;
+""", False, result_type='table')
+    occupied_plus_complete = pd.DataFrame(invoice, columns=columns)
+
+    invoice, columns = DBfunctions.sql_execute("""
+SELECT DATE_FORMAT(DATE_SUB(Moment,INTERVAL 5 hour), '%a, %e %b') as 'Date', CONCAT(BuildingName, " " , FrontDoor) as 'Unit' , Occupancy , OriginalOccupancy , Priority , Note 
+from all_notes_cte
+WHERE Note LIKE '%p0%'
+ORDER by Moment DESC , BuildingName , FrontDoor , Step , Item ;
+""", False, result_type='table')
+    completed_bydate = pd.DataFrame(invoice, columns=columns)
+
+    invoice, columns = DBfunctions.sql_execute("""
 SELECT BuildingName as 'Building', Occupancy , COUNT(Occupancy) as 'Count'
 FROM all_frontdoors_cte afc 
 WHERE TypeUnit = 'residence'
@@ -170,6 +190,8 @@ ORDER BY Item , Note , Moment ;
     markedtodo = pd.DataFrame(invoice, columns=columns)
 
     with pd.ExcelWriter('misc reports.xlsx') as writer:
+        occupied_plus_complete.to_excel(writer, sheet_name='occ_plus_complete', index=False)
+        completed_bydate.to_excel(writer, sheet_name='completed_bydate', index=False)
         occupancy_report.to_excel(writer, sheet_name='occupancy', index=False)
         bybuilding_counts.to_excel(writer, sheet_name='bybuilding_counts', index=False)
         byitem_counts.to_excel(writer, sheet_name='byitem_counts', index=False)
