@@ -364,7 +364,6 @@ SELECT Priority , CONCAT(BuildingName, " " , FrontDoor) as 'Unit' , Step , Item 
 from all_notes_cte
 WHERE Occupancy LIKE '%vacant%'
 AND Status = 'todo'
-AND Priority LIKE 'p%'
 AND Priority NOT LIKE 'p0%'
 AND Step < 100
 GROUP by siid 
@@ -378,7 +377,6 @@ SELECT Priority , CONCAT(BuildingName, " " , FrontDoor) as 'Unit' , Step , Item 
 from all_notes_cte
 WHERE Occupancy LIKE '%vacant%'
 AND Status = 'todo'
-AND Priority LIKE 'p%'
 AND Priority NOT LIKE 'p0%'
 AND Step < 100
 AND Trade = ?
