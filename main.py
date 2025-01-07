@@ -45,7 +45,7 @@ def todocurrent():
 
 @application.route("/roomsbypriority", methods=['GET'])
 def roomsbypriority():
-    display_this_json = sqlstatements.todo_list_current()
+    display_this_json = sqlstatements.rooms_by_priority()
 
     return render_template('roomsbypriority.html', display_this=display_this_json)
 

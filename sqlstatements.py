@@ -388,6 +388,20 @@ ORDER by Priority , BuildingName , FrontDoor , Step , Item ;
 
     return todo_json
 
+def rooms_by_priority():
+    sql_statement = """
+SELECT Priority , CONCAT(BuildingName, " " , FrontDoor) as 'Unit' , Step , Item , GROUP_CONCAT(CONCAT(Note, " - ", DATE_FORMAT(DATE_SUB(Moment,INTERVAL 5 hour), '%a, %e %b')) order by Moment DESC separator '---') as 'Notes', Trade , Status , siid
+from all_notes_cte
+WHERE Occupancy LIKE '%vacant%'
+AND Priority NOT LIKE 'p0%'
+GROUP by BuildingName , FrontDoor
+ORDER by Priority , BuildingName , FrontDoor , Step , Item ;
+"""
+    qms = False
+    todo_json = DBfunctions.sql_execute(sql_statement, qms, 'json')
+
+    return todo_json
+
 def turned_rooms():
     sql_statement = """
 SELECT Priority , CONCAT(BuildingName, " " , FrontDoor) as 'Unit' , Step , Item , GROUP_CONCAT(CONCAT(Note, " - ", DATE_FORMAT(DATE_SUB(Moment,INTERVAL 5 hour), '%a, %e %b')) order by Moment DESC separator '---') as 'Notes', Status , OriginalOccupancy , siid
