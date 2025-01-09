@@ -55,6 +55,12 @@ def turnedrooms():
 
     return render_template('turnedrooms.html', display_this=display_this_json)
 
+@application.route("/turnedwithdate", methods=['GET'])
+def turnedwithdate():
+    display_this_json = sqlstatements.turned_recent()
+
+    return render_template('turnedwithdate.html', display_this=display_this_json)
+
 @application.route("/allnotesticker", methods=['GET'])
 def allnotesticker():
     display_this_json = sqlstatements.all_notes_ticker(look_back=14)

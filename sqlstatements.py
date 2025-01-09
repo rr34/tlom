@@ -417,6 +417,20 @@ ORDER by BuildingName , FrontDoor , Step , Item ;
 
     return todo_json
 
+def turned_recent():
+    sql_statement = """
+SELECT CONCAT(BuildingName, " " , FrontDoor) as 'Unit' , DATE_FORMAT(DATE_SUB(Moment,INTERVAL 5 hour), '%a, %e %b') as 'Date'
+from all_notes_cte
+WHERE Note LIKE '%->p0%'
+and Priority LIKE 'p0'
+GROUP by BuildingName , FrontDoor 
+ORDER by Moment DESC , BuildingName , FrontDoor ;
+"""
+    qms = False
+    todo_json = DBfunctions.sql_execute(sql_statement, qms, 'json')
+
+    return todo_json
+
 def all_notes_ticker(look_back):
     sql_statement = """
 SELECT DATE_FORMAT(DATE_SUB(Moment,INTERVAL 5 hour), '%a, %e %b') as 'Day', DATE_FORMAT(DATE_SUB(Moment,INTERVAL 5 hour), '%H:%i') as 'Time', CONCAT(BuildingName , ' ' ,  FrontDoor) as 'Unit' , Item , Note 
