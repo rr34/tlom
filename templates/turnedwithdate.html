@@ -1,0 +1,19 @@
+{% extends "layout.html" %}
+{% block title %}
+Turned Rooms Ticker
+{% endblock %}
+{% block content %}
+
+<h1 id="heading"></h1>
+
+<script type="text/javascript" src="{{ url_for('static', filename='js/turned_date.js') }}"></script>
+<script type="text/javascript">
+    let post_data_json = '{{ display_this|tojson }}'.replace(/\n/g, "\\n");
+    let post_data_obj = JSON.parse(post_data_json);
+    let heading = document.getElementById("heading");
+    heading.innerHTML = "Turned Rooms Ticker";
+
+    let items_div = turned_ticker(data_obj=post_data_obj)
+        document.body.appendChild(items_div);
+</script>
+{% endblock %}
