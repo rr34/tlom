@@ -3,17 +3,17 @@
 Table Results
 {% endblock %}
 {% block content %}
-        <table border="1px">
-            <thead>
-                <td><strong>field_1</strong></td>
-                <td><strong>field_2</strong></td>
-            </thead>
+    <table border="1px">
+        <thead>
+            <td><strong>field_1</strong></td>
+            <td><strong>field_2</strong></td>
+        </thead>
 
-            {% for row in rows %}
-            <tr>
-                <td>{{ row["field_1"] }}</td>
-                <td>{{ row["field_2"] }}</td>
-            </tr>
-            {% endfor %}
-        </table>
+        {% for row in rows %}
+        <tr>
+            <td>{{ row["field_1"] }}</td>
+            <td>{{ row["field_2"] }}</td>
+        </tr>
+        {% endfor %}
+    </table>
 {% endblock %}

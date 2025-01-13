@@ -375,11 +375,13 @@ ORDER by Priority , BuildingName , FrontDoor , Step , Item ;
         sql_statement = """
 SELECT Priority , CONCAT(BuildingName, " " , FrontDoor) as 'Unit' , Step , Item , GROUP_CONCAT(CONCAT(Note, " - ", DATE_FORMAT(DATE_SUB(Moment,INTERVAL 5 hour), '%a, %e %b')) order by Moment DESC separator '---') as 'Notes', Trade , Status , siid
 from all_notes_cte
-WHERE Occupancy LIKE '%vacant%'
+WHERE (Occupancy LIKE '%vacant%'
 AND Status = 'todo'
 AND Priority NOT LIKE 'p0%'
 AND Step < 100
-AND Trade = ?
+AND Trade = ?)
+OR (Trade = 'tempfilter'
+AND Status = 'todo')
 GROUP by siid 
 ORDER by Priority , BuildingName , FrontDoor , Step , Item ;
 """
