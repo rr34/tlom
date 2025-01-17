@@ -672,3 +672,37 @@ ORDER by BuildingName , FrontDoor ;
     new_occupieds = DBfunctions.sql_execute(sql_statement, qms, 'json')
 
     return new_vacants, new_occupieds
+
+
+def jr_report():
+    invoice, columns = DBfunctions.sql_execute("""
+with totals as (
+	SELECT ReviCategory , CONCAT(BuildingName, " " , FrontDoor) as 'Unit', COUNT(ReviCategory) as 'Total' , CONCAT(BuildingName , FrontDoor , ReviCategory) AS 'joiner1'
+	FROM all_items_cte
+	WHERE ReviCategory != 'na'
+	and TypeUnit = 'residence'
+	-- and Status = 'complete'
+	GROUP by BuildingName , FrontDoor , ReviCategory
+), completes as (
+	SELECT ReviCategory , CONCAT(BuildingName, " " , FrontDoor) as 'Unit', COUNT(ReviCategory) as 'Complete' , CONCAT(BuildingName , FrontDoor , ReviCategory) AS 'joiner2'
+	FROM all_items_cte
+	WHERE ReviCategory != 'na'
+	and TypeUnit = 'residence'
+	and Status = 'complete'
+	GROUP by BuildingName , FrontDoor , ReviCategory
+)
+SELECT totals.ReviCategory , totals.Unit , floor(round(completes.complete / totals.Total * 100,0) / 25) * 25/100 as 'Percent Complete'
+FROM totals left join completes on joiner1 = joiner2 ;
+""", False, result_type='table')
+    jr_report_manyrows = pd.DataFrame(invoice, columns=columns)
+
+    jr_report_pivoted = jr_report_manyrows.pivot(index='ReviCategory', columns='Unit')
+    # jr_report_pivoted = pd.to_numeric(jr_report_pivoted)
+    jr_report_pivoted.fillna(value=0, inplace=True)
+
+
+    with pd.ExcelWriter('jr_report.xlsx') as writer:
+        jr_report_pivoted.to_excel(writer, sheet_name='totals')
+  
+    return True
+
